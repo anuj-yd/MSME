@@ -1,21 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PageShell, SectionCard } from '../dashboard/DashboardComponents.jsx'
-import { useAppActions, useAppState } from '../../state/appStore.jsx'
+import { SectionCard } from '../dashboard/DashboardComponents.jsx'
+import { AdminLayout } from './AdminLayout.jsx'
+import { useAppActions } from '../../state/appStore.jsx'
 import { Pill } from '../renewals/RenewalComponents.jsx'
+import { ApplicationTracker } from '../../components/ApplicationTracker.jsx'
+import { CertificateDownload } from '../../components/CertificateDownload.jsx'
+import {
+  calculateFeeDetails,
+  defaultPaymentDetails,
+  getApplicationRecord,
+  normalizeStatus,
+  saveApplicationRecord,
+} from '../../lib/applicationRecords.js'
 
 function AdminRenewalDetailPage({ id }) {
-  const { user } = useAppState()
-  const { adminGetRenewal, adminSetRenewalStatus, adminRequestOtp, adminGetOtp } = useAppActions()
+  const { adminGetRenewal } = useAppActions()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [data, setData] = useState(null)
+  const [record, setRecord] = useState(null)
   const [statusLoading, setStatusLoading] = useState(false)
-  const [otpLoading, setOtpLoading] = useState(false)
-  const [otpValue, setOtpValue] = useState('')
-  const [otpStatus, setOtpStatus] = useState('')
+  const [rejectionReason, setRejectionReason] = useState('')
 
   const renewal = data?.renewal
   const docs = data?.documents || []
+  const userInfo = useMemo(() => data?.user || record?.user, [data, record])
+  const type = useMemo(() => data?.type, [data])
 
   useEffect(() => {
     let mounted = true
@@ -23,8 +33,19 @@ function AdminRenewalDetailPage({ id }) {
       setError('')
       setLoading(true)
       try {
-        const res = await adminGetRenewal(id)
-        if (mounted) setData(res)
+        let apiData = null
+        try {
+          apiData = await adminGetRenewal(id)
+        } catch {
+          apiData = null
+        }
+
+        const localRecord = getApplicationRecord(id)
+        if (mounted) {
+          setData(apiData)
+          setRecord(localRecord || buildRecordFromApi(apiData, id))
+          setRejectionReason(localRecord?.rejectionReason || '')
+        }
       } catch (e) {
         setError(e?.response?.data?.message || e.message || 'Failed to load case')
       } finally {
@@ -37,122 +58,96 @@ function AdminRenewalDetailPage({ id }) {
     }
   }, [adminGetRenewal, id])
 
-  const userInfo = useMemo(() => data?.user, [data])
-  const type = useMemo(() => data?.type, [data])
+  function patchRecord(patch) {
+    const next = saveApplicationRecord({
+      ...(record || {}),
+      id,
+      ...patch,
+    })
+    setRecord(next)
+    return next
+  }
 
-  async function setStatus(next) {
+  async function setStatus(nextStatus) {
     setStatusLoading(true)
     try {
-      await adminSetRenewalStatus(id, next)
-      const res = await adminGetRenewal(id)
-      setData(res)
+      patchRecord({
+        status: nextStatus,
+        certificateStatus: nextStatus === 'Certificate Ready' ? 'Ready' : record?.certificateStatus || 'Not Ready',
+        approvalDate: nextStatus === 'Approved' || nextStatus === 'Certificate Ready'
+          ? record?.approvalDate || new Date().toLocaleDateString()
+          : record?.approvalDate,
+      })
     } finally {
       setStatusLoading(false)
     }
   }
 
-  async function requestOtp() {
-    setOtpLoading(true)
-    setOtpValue('')
-    setOtpStatus('')
-    try {
-      await adminRequestOtp(id, 'OTP required for government portal step')
-      setOtpStatus('requested')
-    } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'Failed to request OTP')
-    } finally {
-      setOtpLoading(false)
-    }
+  function verifyPayment() {
+    patchRecord({
+      paymentDetails: {
+        ...record?.paymentDetails,
+        paymentStatus: 'Verified',
+      },
+      status: record?.status === 'Payment Pending' ? 'Under Review' : record?.status,
+    })
   }
 
-  async function fetchOtp() {
-    setOtpLoading(true)
-    setOtpValue('')
-    try {
-      const res = await adminGetOtp(id)
-      setOtpStatus(res.status || '')
-      if (res.otp) setOtpValue(res.otp)
-    } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'Failed to get OTP')
-    } finally {
-      setOtpLoading(false)
-    }
+  function rejectApplication() {
+    patchRecord({
+      status: 'Rejected',
+      rejectionReason: rejectionReason || 'Application rejected by admin.',
+    })
   }
 
   return (
-    <PageShell
-      title="Admin • Case"
-      subtitle={`Signed in as ${user?.email || 'admin'}`}
-      right={
-        <a
-          href="#/admin/renewals"
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-        >
-          Back to inbox
-        </a>
-      }
-    >
+    <AdminLayout title="Admin - Application Details">
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">Loading…</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">Loading...</div>
       ) : error ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">{error}</div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <SectionCard title="Case details" description="User + renewal summary.">
+            <SectionCard title="Application details" description="User, business, fee, and status summary.">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-xs text-slate-600">User</div>
-                  <div className="mt-1 text-sm font-semibold">{userInfo?.name}</div>
-                  <div className="mt-0.5 text-xs text-slate-600">{userInfo?.email}</div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-xs text-slate-600">Renewal type</div>
-                  <div className="mt-1 text-sm font-semibold">{type?.name || renewal?.renewal_type_code}</div>
-                  <div className="mt-0.5 text-xs text-slate-600">{renewal?.renewal_type_code}</div>
-                </div>
+                <InfoCard label="User" value={userInfo?.name || '-'} hint={userInfo?.email || '-'} />
+                <InfoCard label="Application" value={record?.renewalTypeName || type?.name || renewal?.renewal_type_code || '-'} hint={record?.trackingId || 'No tracking ID'} />
+                <InfoCard label="Business name" value={record?.businessName || '-'} hint={record?.registrationNumber || 'No registration number'} />
+                <InfoCard label="Enterprise / Type" value={`${record?.enterpriseCategory || '-'} / ${record?.applicationType || '-'}`} hint="Micro/Small and Renewal/Update" />
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm font-semibold">Status</div>
-                <Pill tone={renewal?.status === 'submitted' ? 'info' : renewal?.status === 'otp_required' ? 'warn' : 'ok'}>
-                  {renewal?.status}
+              <div className="mt-5 flex items-center justify-between">
+                <div className="text-sm font-semibold">Current status</div>
+                <Pill tone={record?.status === 'Rejected' || record?.status === 'Payment Pending' ? 'warn' : 'ok'}>
+                  {record?.status || '-'}
                 </Pill>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  disabled={statusLoading}
-                  onClick={() => setStatus('in_review')}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
-                >
-                  Mark in_review
-                </button>
-                <button
-                  disabled={statusLoading}
-                  onClick={() => setStatus('filed')}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
-                >
-                  Mark filed
-                </button>
-                <button
-                  disabled={statusLoading}
-                  onClick={() => setStatus('completed')}
-                  className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60"
-                >
-                  Complete
-                </button>
-                <button
-                  disabled={statusLoading}
-                  onClick={() => setStatus('rejected')}
-                  className="rounded-xl bg-rose-700 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-60"
-                >
-                  Reject
-                </button>
+              <div className="mt-5">
+                <ApplicationTracker record={record} />
               </div>
             </SectionCard>
 
-            <SectionCard title="Documents" description="Open ImageKit URLs for filing on govt portal.">
+            <SectionCard title="Payment details" description="Verify payment before moving the application forward.">
+              <div className="grid gap-3 md:grid-cols-2">
+                <InfoCard label="Mode" value={record?.paymentDetails?.mode || '-'} />
+                <InfoCard label="Transaction ID / UTR" value={record?.paymentDetails?.transactionId || '-'} />
+                <InfoCard label="Payment date" value={record?.paymentDetails?.paymentDate || '-'} />
+                <InfoCard label="Amount paid" value={`Rs. ${record?.paymentDetails?.amountPaid || 0}`} />
+                <InfoCard label="Payment status" value={record?.paymentDetails?.paymentStatus || '-'} />
+                <InfoCard label="Receipt" value={record?.paymentDetails?.receiptFile || 'Not uploaded'} />
+              </div>
+              <button
+                type="button"
+                onClick={verifyPayment}
+                className="mt-4 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+              >
+                Verify Payment
+              </button>
+            </SectionCard>
+
+            <SectionCard title="Documents" description="Open uploaded documents for review.">
               {docs.length ? (
                 <div className="space-y-3">
                   {docs.map((d) => (
@@ -168,12 +163,7 @@ function AdminRenewalDetailPage({ id }) {
                         </div>
                       </div>
                       {d.imagekit_url ? (
-                        <a
-                          href={d.imagekit_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-                        >
+                        <a href={d.imagekit_url} target="_blank" rel="noreferrer" className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800">
                           Open
                         </a>
                       ) : (
@@ -184,50 +174,101 @@ function AdminRenewalDetailPage({ id }) {
                 </div>
               ) : (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
-                  No documents attached.
+                  No documents attached or backend document API unavailable.
                 </div>
               )}
             </SectionCard>
           </div>
 
           <div className="space-y-6">
-            <SectionCard title="OTP step" description="Request OTP from user, view it once, and proceed.">
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                Security: OTP is encrypted, expires in 5 minutes, and can be viewed only once by the requesting admin.
-              </div>
-
-              <div className="mt-4 grid gap-2">
-                <button
-                  disabled={otpLoading}
-                  onClick={requestOtp}
-                  className="rounded-xl bg-[#1E5AA6] px-3 py-2 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:opacity-60"
-                >
-                  Request OTP
+            <SectionCard title="Admin actions" description="Move application through required status stages.">
+              <div className="grid gap-2">
+                <button disabled={statusLoading} onClick={() => setStatus('Under Review')} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60">
+                  Mark Under Review
                 </button>
-                <button
-                  disabled={otpLoading}
-                  onClick={fetchOtp}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
-                >
-                  Check / Reveal OTP
+                <button disabled={statusLoading} onClick={() => setStatus('Approved')} className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">
+                  Approve
+                </button>
+                <button disabled={statusLoading} onClick={() => setStatus('Certificate Ready')} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                  Mark Certificate Ready
                 </button>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="text-xs text-slate-600">OTP status</div>
-                <div className="mt-1 text-sm font-semibold">{otpStatus || '—'}</div>
-                <div className="mt-3 text-xs text-slate-600">OTP (visible once)</div>
-                <div className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-lg tracking-[0.4em]">
-                  {otpValue ? otpValue : '••••'}
-                </div>
+              <div className="mt-5">
+                <label className="text-sm font-semibold text-slate-700">
+                  Rejection reason
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(event) => setRejectionReason(event.target.value)}
+                    rows={3}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={rejectApplication}
+                  className="mt-3 w-full rounded-xl bg-rose-700 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600"
+                >
+                  Reject Application
+                </button>
               </div>
+            </SectionCard>
+
+            <SectionCard title="Fee details" description="Base Fee + Late Fee = Total Amount">
+              <div className="space-y-3 text-sm">
+                <AmountRow label="Base Fee" value={record?.feeDetails?.baseFee || 0} />
+                <AmountRow label="Late Fee" value={record?.feeDetails?.lateFee || 0} />
+                <AmountRow label="Total Amount" value={record?.feeDetails?.totalAmount || 0} strong />
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Certificate preview" description="Admin can verify when download will unlock.">
+              <CertificateDownload record={record} />
             </SectionCard>
           </div>
         </div>
       )}
-    </PageShell>
+    </AdminLayout>
+  )
+}
+
+function buildRecordFromApi(data, id) {
+  if (!data?.renewal) return null
+  const fields = data.renewal.fields || {}
+  const feeDetails = calculateFeeDetails({ licenseType: data.type?.name || data.renewal.renewal_type_code || '' })
+  return {
+    id,
+    renewalTypeCode: data.renewal.renewal_type_code || '',
+    renewalTypeName: data.type?.name || data.renewal.renewal_type_code || '',
+    businessName: fields.business_name || fields.enterprise_name || '',
+    registrationNumber: fields.registration_no || fields.udyam_no || '',
+    enterpriseCategory: feeDetails.enterpriseCategory,
+    applicationType: feeDetails.applicationType,
+    feeDetails,
+    paymentDetails: defaultPaymentDetails(feeDetails.totalAmount),
+    status: normalizeStatus(data.renewal.status),
+    certificateStatus: 'Not Ready',
+    user: data.user ? { id: data.user.id || data.user._id || '', name: data.user.name || '', email: data.user.email || '' } : null,
+  }
+}
+
+function InfoCard({ label, value, hint }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-slate-900">{value}</div>
+      {hint ? <div className="mt-0.5 text-xs text-slate-600">{hint}</div> : null}
+    </div>
+  )
+}
+
+function AmountRow({ label, value, strong = false }) {
+  return (
+    <div className={`flex items-center justify-between ${strong ? 'border-t border-slate-200 pt-3 font-black' : ''}`}>
+      <span>{label}</span>
+      <span>Rs. {value}</span>
+    </div>
   )
 }
 
 export default AdminRenewalDetailPage
-

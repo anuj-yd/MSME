@@ -14,14 +14,22 @@ function PricingPage() {
       {
         id: 'premium_monthly',
         name: 'Premium Monthly',
-        price: '₹99',
+        price: 'Rs. 99',
+        cadence: 'per month',
         desc: 'Unlock downloads, full details, and priority support.',
+        highlight: false,
+        savings: 'Flexible monthly access',
+        features: ['Detailed renewal reports', 'Full application timeline', 'Priority support', 'Certificate download access'],
       },
       {
         id: 'premium_yearly',
         name: 'Premium Yearly',
-        price: '₹999',
+        price: 'Rs. 999',
+        cadence: 'per year',
         desc: 'Best value for year-round renewals.',
+        highlight: true,
+        savings: 'Save compared with monthly billing',
+        features: ['Everything in monthly', 'Best for multiple renewals', 'Year-round compliance support', 'Lower annual cost'],
       },
     ],
     [],
@@ -67,7 +75,7 @@ function PricingPage() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             })
-            setMessage('Payment verified. Premium unlocked. Redirecting to dashboard…')
+            setMessage('Payment verified. Premium unlocked. Redirecting to dashboard...')
             setTimeout(() => {
               window.location.hash = '#/dashboard'
             }, 700)
@@ -98,80 +106,171 @@ function PricingPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#f7f9fc] text-slate-900">
-      <div className="mx-auto w-full max-w-6xl px-4 py-12">
-        <a className="text-sm text-slate-600 hover:underline" href="#/dashboard">
-          ← Back to dashboard
-        </a>
+    <div className="relative min-h-dvh overflow-hidden bg-slate-50 text-slate-900">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-primary-200/30 blur-[110px]" />
+        <div className="absolute -right-24 top-40 h-[460px] w-[460px] rounded-full bg-emerald-200/25 blur-[120px]" />
+      </div>
 
-        <div className="mt-6 grid gap-8 md:grid-cols-2 md:items-start">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Go Premium</h1>
-            <p className="mt-3 text-slate-700">
-              Pay once and unlock full access. Razorpay integration will be connected
-              using test keys for demo. Production (webhooks/KYC) later.
-            </p>
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-              Demo tip: checkout is configured to use <span className="font-semibold">Netbanking</span> so the payment can
-              succeed reliably in test mode.
+      <header className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-xl shadow-sm">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
+          <a href="#/dashboard" className="flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-800 text-white shadow-md">
+              <span className="text-sm font-bold tracking-wider">RP</span>
+            </div>
+            <div>
+              <div className="text-base font-bold tracking-tight text-slate-900">Premium Access</div>
+              <div className="text-xs font-medium uppercase tracking-widest text-slate-500">Renewal Portal for MSEs</div>
+            </div>
+          </a>
+          <a className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50" href="#/dashboard">
+            Dashboard
+          </a>
+        </div>
+      </header>
+
+      <main className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10">
+        <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div className="space-y-6">
+            <div>
+              <div className="inline-flex rounded-full border border-primary-100 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700 shadow-sm">
+                Premium plan
+              </div>
+              <h1 className="mt-5 max-w-xl text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
+                Unlock faster renewals and complete compliance records.
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
+                Get report downloads, complete application details, certificate access, and priority support for your renewal workflow.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <MiniStat label="Reports" value="CSV" />
+              <MiniStat label="Support" value="Priority" />
+              <MiniStat label="Access" value="Full" />
             </div>
 
             {!authToken ? (
-              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                Please login first to create an order.
-              </div>
+              <StatusBox tone="warn">Please login first to create an order.</StatusBox>
             ) : null}
+            {error ? <StatusBox tone="error">{error}</StatusBox> : null}
+            {message ? <StatusBox tone="success">{message}</StatusBox> : null}
 
-            {error ? (
-              <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-                {error}
-              </div>
-            ) : null}
-
-            {message ? (
-              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                {message}
-              </div>
-            ) : null}
-
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-              <div className="font-semibold">Required env (backend)</div>
-              <ul className="mt-2 list-disc pl-5">
-                <li>
-                  <code>RAZORPAY_KEY_ID</code>
-                </li>
-                <li>
-                  <code>RAZORPAY_KEY_SECRET</code>
-                </li>
-              </ul>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 text-sm text-slate-700 shadow-sm backdrop-blur">
+              <div className="font-bold text-slate-900">Checkout note</div>
+              <p className="mt-2 leading-relaxed">
+                Razorpay checkout is configured for Net Banking in test mode. Backend must have <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code> configured.
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-5 md:grid-cols-2">
             {plans.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold">{p.name}</div>
-                    <div className="mt-1 text-sm text-slate-600">{p.desc}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold tracking-tight">{p.price}</div>
-                    <div className="text-xs text-slate-500">INR</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => createOrder(p.id)}
-                  disabled={!!loading || !authToken}
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:scale-105 shadow-md shadow-primary-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading === p.id ? 'Creating order…' : 'Pay with Razorpay'}
-                </button>
+              <PlanCard
+                key={p.id}
+                plan={p}
+                loading={loading === p.id}
+                disabled={!!loading || !authToken}
+                onPay={() => createOrder(p.id)}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-3xl border border-white/70 bg-white/70 p-6 shadow-sm backdrop-blur-xl">
+          <h2 className="text-xl font-black tracking-tight text-slate-900">What premium unlocks</h2>
+          <p className="mt-1 text-sm text-slate-600">Designed for repeated compliance work, not just one-time checkout.</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
+            {[
+              ['Detailed reports', 'Download renewal summaries and keep records audit-ready.'],
+              ['Full application details', 'View complete status timeline and submitted data.'],
+              ['Certificate access', 'Download certificates after approval and verification.'],
+              ['Priority support', 'Get faster help for renewal and document issues.'],
+            ].map(([title, desc]) => (
+              <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="text-sm font-bold text-slate-900">{title}</div>
+                <div className="mt-2 text-sm leading-relaxed text-slate-600">{desc}</div>
               </div>
             ))}
           </div>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function PlanCard({ plan, loading, disabled, onPay }) {
+  return (
+    <div
+      className={[
+        'relative overflow-hidden rounded-3xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl',
+        plan.highlight ? 'border-primary-200 ring-4 ring-primary-500/10' : 'border-slate-200',
+      ].join(' ')}
+    >
+      {plan.highlight ? (
+        <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-3 py-1 text-xs font-black uppercase tracking-wider text-white">
+          Best value
         </div>
+      ) : null}
+
+      <div className="pr-20">
+        <div className="text-sm font-black uppercase tracking-wider text-primary-700">{plan.name}</div>
+        <p className="mt-3 min-h-12 text-sm leading-relaxed text-slate-600">{plan.desc}</p>
       </div>
+
+      <div className="mt-6">
+        <div className="flex items-end gap-2">
+          <span className="text-4xl font-black tracking-tight text-slate-950">{plan.price}</span>
+          <span className="pb-1 text-sm font-semibold text-slate-500">{plan.cadence}</span>
+        </div>
+        <div className="mt-2 text-xs font-bold uppercase tracking-wider text-emerald-700">{plan.savings}</div>
+      </div>
+
+      <ul className="mt-6 space-y-3">
+        {plan.features.map((feature) => (
+          <li key={feature} className="flex items-start gap-3 text-sm font-medium text-slate-700">
+            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-[10px] font-black text-emerald-700">OK</span>
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={onPay}
+        disabled={disabled}
+        className={[
+          'mt-7 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-black text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60',
+          plan.highlight
+            ? 'bg-gradient-to-r from-primary-600 to-indigo-600 shadow-primary-500/25 hover:scale-[1.02]'
+            : 'bg-slate-900 shadow-slate-900/15 hover:bg-slate-800',
+        ].join(' ')}
+      >
+        {loading ? 'Creating order...' : 'Pay with Razorpay'}
+      </button>
+    </div>
+  )
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm backdrop-blur">
+      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="mt-1 text-lg font-black text-slate-900">{value}</div>
+    </div>
+  )
+}
+
+function StatusBox({ tone, children }) {
+  const className =
+    tone === 'error'
+      ? 'border-rose-200 bg-rose-50 text-rose-700'
+      : tone === 'success'
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+        : 'border-amber-200 bg-amber-50 text-amber-900'
+
+  return (
+    <div className={`rounded-2xl border p-4 text-sm font-medium ${className}`}>
+      {children}
     </div>
   )
 }

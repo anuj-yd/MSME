@@ -4,12 +4,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentVaultAccessController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Middleware\ApiTokenAuth;
+use App\Http\Middleware\EnsureDocumentVaultUnlocked;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Admin\AdminRenewalController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\OtpApprovalController;
 
 // Route::get('/user', function (Request $request) {
@@ -30,10 +34,16 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(ApiTokenAuth::class)->group(function () {
-    Route::get('/documents', [DocumentController::class, 'index']);
-    Route::post('/documents', [DocumentController::class, 'store']);
-    Route::patch('/documents/{id}', [DocumentController::class, 'update']);
-    Route::delete('/documents/{id}', [DocumentController::class, 'destroy']);
+    Route::get('/document-vault/status', [DocumentVaultAccessController::class, 'status']);
+    Route::post('/document-vault/request-otp', [DocumentVaultAccessController::class, 'requestOtp']);
+    Route::post('/document-vault/verify', [DocumentVaultAccessController::class, 'verify']);
+
+    Route::middleware(EnsureDocumentVaultUnlocked::class)->group(function () {
+        Route::get('/documents', [DocumentController::class, 'index']);
+        Route::post('/documents', [DocumentController::class, 'store']);
+        Route::patch('/documents/{id}', [DocumentController::class, 'update']);
+        Route::delete('/documents/{id}', [DocumentController::class, 'destroy']);
+    });
 
     Route::get('/renewal-types', [RenewalController::class, 'types']);
     Route::get('/renewals', [RenewalController::class, 'index']);
@@ -50,6 +60,10 @@ Route::middleware(ApiTokenAuth::class)->group(function () {
 });
 
 Route::prefix('admin')->middleware([ApiTokenAuth::class, EnsureAdmin::class])->group(function () {
+    Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
+    Route::get('/users', [AdminUserController::class, 'index']);
+    Route::patch('/users/{id}/role', [AdminUserController::class, 'updateRole']);
+
     Route::get('/renewals', [AdminRenewalController::class, 'index']);
     Route::get('/renewals/{id}', [AdminRenewalController::class, 'show']);
     Route::post('/renewals/{id}/status', [AdminRenewalController::class, 'setStatus']);

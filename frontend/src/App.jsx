@@ -7,10 +7,16 @@ import PricingPage from './pages/PricingPage.jsx'
 import RenewalsPage from './pages/RenewalsPage.jsx'
 import RenewalDetailPage from './pages/RenewalDetailPage.jsx'
 import DocumentsPage from './pages/DocumentsPage.jsx'
+import SmartAssistant from './pages/SmartAssistant.jsx'
+import TrackApplicationPage from './pages/TrackApplicationPage.jsx'
+import CertificatePage from './pages/CertificatePage.jsx'
 import AdminRenewalsPage from './pages/admin/AdminRenewalsPage.jsx'
 import AdminRenewalDetailPage from './pages/admin/AdminRenewalDetailPage.jsx'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
+import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
 import OtpApprovalPage from './pages/OtpApprovalPage.jsx'
 import { useEffect, useState } from 'react'
+import { GoogleTranslateElement } from './components/GoogleTranslate.jsx'
 
 function getRoute() {
   const raw = window.location.hash || '#/'
@@ -82,6 +88,14 @@ function App() {
   else if (pathname === '/pricing') page = <PricingPage />
   else if (pathname === '/renewals') page = <RenewalsPage />
   else if (pathname === '/documents') page = <DocumentsPage />
+  else if (pathname === '/smart-assistant') page = <SmartAssistant />
+  else if (pathname === '/track') page = <TrackApplicationPage initialTrackingId={params.get('trackingId') || ''} />
+  else if (pathname.startsWith('/certificate/')) {
+    const id = decodeURIComponent(pathname.replace('/certificate/', ''))
+    page = <CertificatePage id={id} />
+  }
+  else if (pathname === '/admin' || pathname === '/admin/dashboard') page = <AdminDashboardPage />
+  else if (pathname === '/admin/users') page = <AdminUsersPage />
   else if (pathname === '/admin/renewals') page = <AdminRenewalsPage />
   else if (pathname.startsWith('/admin/renewals/')) {
     const id = decodeURIComponent(pathname.replace('/admin/renewals/', ''))
@@ -96,6 +110,7 @@ function App() {
 
   return (
     <>
+      <GoogleTranslateElement />
       <GlobalLoader />
       {page}
     </>

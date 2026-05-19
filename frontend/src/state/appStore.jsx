@@ -1,13 +1,27 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
 import { api } from '../lib/apiClient.js'
+import { SUPPORTED_LANGUAGES } from '../lib/languages.js'
 
 const AppStateContext = createContext(null)
 const AppActionsContext = createContext(null)
 
+const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((language) => language.code)
+
+function getStoredPreference(key, fallback, allowed) {
+  const value = localStorage.getItem(key)
+  return allowed.includes(value) ? value : fallback
+}
+
 const initialState = {
   authToken: localStorage.getItem('auth_token') || '',
+  language: 'en',
+  theme: getStoredPreference('app_theme', 'light', ['light', 'dark']),
   user: null,
   entitlement: null,
+  documentVault: {
+    unlocked: false,
+    unlocked_until: null,
+  },
   documents: [],
   renewals: [],
   renewalTypes: [],
@@ -27,6 +41,14 @@ function reducer(state, action) {
       return { ...state, user: action.user || null }
     case 'billing/setEntitlement':
       return { ...state, entitlement: action.entitlement || null }
+    case 'documentVault/set':
+      return {
+        ...state,
+        documentVault: {
+          unlocked: !!action.documentVault?.unlocked,
+          unlocked_until: action.documentVault?.unlocked_until || null,
+        },
+      }
     case 'docs/setAll':
       return { ...state, documents: Array.isArray(action.documents) ? action.documents : [] }
     case 'docs/prepend':
@@ -39,6 +61,13 @@ function reducer(state, action) {
       return { ...state, loading: { ...state.loading, [action.key]: !!action.value } }
     case 'ui/setError':
       return { ...state, errors: { ...state.errors, [action.key]: action.error || '' } }
+    case 'preferences/setLanguage':
+      return {
+        ...state,
+        language: SUPPORTED_LANGUAGE_CODES.includes(action.language) ? action.language : 'en',
+      }
+    case 'preferences/setTheme':
+      return { ...state, theme: action.theme === 'dark' ? 'dark' : 'light' }
     default:
       return state
   }
@@ -52,27 +81,66 @@ export function AppStoreProvider({ children }) {
     else localStorage.removeItem('auth_token')
   }, [state.authToken])
 
+  useEffect(() => {
+    localStorage.setItem('app_language', state.language)
+    document.documentElement.lang = state.language
+  }, [state.language])
+
+  useEffect(() => {
+    localStorage.setItem('app_theme', state.theme)
+    document.documentElement.classList.toggle('dark', state.theme === 'dark')
+    document.documentElement.dataset.theme = state.theme
+  }, [state.theme])
+
   const actions = useMemo(() => {
+    function setLanguage(language) {
+      dispatch({ type: 'preferences/setLanguage', language })
+    }
+
+    function setTheme(theme) {
+      dispatch({ type: 'preferences/setTheme', theme })
+    }
+
+    function toggleTheme() {
+      dispatch({ type: 'preferences/setTheme', theme: state.theme === 'dark' ? 'light' : 'dark' })
+    }
+
     async function bootstrap() {
       if (!state.authToken) return
       dispatch({ type: 'ui/setLoading', key: 'bootstrap', value: true })
       dispatch({ type: 'ui/setError', key: 'bootstrap', error: '' })
       try {
-        const [me, ent, docs, renewals] = await Promise.all([
+        const [me, ent, renewals, typesRes, vault] = await Promise.all([
           api.get('/auth/me'),
           api.get('/billing/entitlement'),
-          api.get('/documents'),
           api.get('/renewals'),
+          api.get('/renewal-types'),
+          api.get('/document-vault/status'),
         ])
-        const typesRes = await api.get('/renewal-types')
+        const vaultState = vault?.data?.document_vault || null
         dispatch({ type: 'auth/setUser', user: me?.data?.user || null })
         dispatch({
           type: 'billing/setEntitlement',
           entitlement: ent?.data?.entitlement || null,
         })
-        dispatch({ type: 'docs/setAll', documents: docs?.data?.documents || [] })
+        dispatch({ type: 'documentVault/set', documentVault: vaultState })
+        dispatch({ type: 'docs/setAll', documents: [] })
         dispatch({ type: 'renewals/setAll', renewals: renewals?.data?.renewals || [] })
         dispatch({ type: 'renewalTypes/setAll', types: typesRes?.data?.types || [] })
+
+        if (vaultState?.unlocked) {
+          try {
+            const docs = await api.get('/documents')
+            dispatch({ type: 'docs/setAll', documents: docs?.data?.documents || [] })
+          } catch (e) {
+            if (e?.response?.status === 423) {
+              dispatch({ type: 'documentVault/set', documentVault: { unlocked: false } })
+              dispatch({ type: 'docs/setAll', documents: [] })
+            } else {
+              throw e
+            }
+          }
+        }
       } catch (e) {
         dispatch({
           type: 'ui/setError',
@@ -99,6 +167,7 @@ export function AppStoreProvider({ children }) {
         dispatch({ type: 'auth/setToken', token: '' })
         dispatch({ type: 'auth/setUser', user: null })
         dispatch({ type: 'billing/setEntitlement', entitlement: null })
+        dispatch({ type: 'documentVault/set', documentVault: null })
         dispatch({ type: 'docs/setAll', documents: [] })
         dispatch({ type: 'renewals/setAll', renewals: [] })
       }
@@ -131,9 +200,39 @@ export function AppStoreProvider({ children }) {
     }
 
     async function refreshDocuments() {
-      const docs = await api.get('/documents')
-      dispatch({ type: 'docs/setAll', documents: docs?.data?.documents || [] })
-      return docs?.data?.documents || []
+      try {
+        const docs = await api.get('/documents')
+        dispatch({ type: 'docs/setAll', documents: docs?.data?.documents || [] })
+        return docs?.data?.documents || []
+      } catch (e) {
+        if (e?.response?.status === 423) {
+          dispatch({ type: 'documentVault/set', documentVault: { unlocked: false } })
+          dispatch({ type: 'docs/setAll', documents: [] })
+        }
+        throw e
+      }
+    }
+
+    async function getDocumentVaultStatus() {
+      const res = await api.get('/document-vault/status')
+      const vault = res?.data?.document_vault || null
+      dispatch({ type: 'documentVault/set', documentVault: vault })
+      return vault
+    }
+
+    async function requestDocumentVaultOtp() {
+      const res = await api.post('/document-vault/request-otp')
+      const vault = res?.data?.document_vault || null
+      if (vault) dispatch({ type: 'documentVault/set', documentVault: vault })
+      return res?.data
+    }
+
+    async function verifyDocumentVaultOtp(otp) {
+      const res = await api.post('/document-vault/verify', { otp })
+      const vault = res?.data?.document_vault || null
+      dispatch({ type: 'documentVault/set', documentVault: vault })
+      await refreshDocuments()
+      return res?.data
     }
 
     async function refreshRenewals() {
@@ -204,6 +303,21 @@ export function AppStoreProvider({ children }) {
       return res?.data
     }
 
+    async function adminGetStats() {
+      const res = await api.get('/admin/dashboard/stats')
+      return res?.data?.stats || null
+    }
+
+    async function adminListUsers() {
+      const res = await api.get('/admin/users')
+      return res?.data?.users || []
+    }
+
+    async function adminUpdateUserRole(userId, role) {
+      const res = await api.patch(`/admin/users/${userId}/role`, { role })
+      return res?.data?.user
+    }
+
     async function createRazorpayOrder(purpose) {
       const res = await api.post('/billing/order', { purpose })
       return res.data
@@ -218,12 +332,18 @@ export function AppStoreProvider({ children }) {
     }
 
     return {
+      setLanguage,
+      setTheme,
+      toggleTheme,
       bootstrap,
       login,
       logout,
       register,
       verifyOtp,
       resendOtp,
+      getDocumentVaultStatus,
+      requestDocumentVaultOtp,
+      verifyDocumentVaultOtp,
       uploadDocument,
       refreshDocuments,
       refreshRenewals,
@@ -238,10 +358,13 @@ export function AppStoreProvider({ children }) {
       adminSetRenewalStatus,
       adminRequestOtp,
       adminGetOtp,
+      adminGetStats,
+      adminListUsers,
+      adminUpdateUserRole,
       createRazorpayOrder,
       verifyRazorpayPayment,
     }
-  }, [state.authToken])
+  }, [state.authToken, state.theme])
 
   return (
     <AppStateContext.Provider value={state}>

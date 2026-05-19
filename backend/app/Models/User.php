@@ -27,6 +27,10 @@ class User extends MongoAuthenticatable
         'email_otp_hash',
         'email_otp_expires_at',
         'otp_last_sent_at',
+        'document_vault_otp_hash',
+        'document_vault_otp_expires_at',
+        'document_vault_otp_last_sent_at',
+        'document_vault_unlocked_until',
         'api_token_hash',
         'api_token_created_at',
     ];
@@ -40,6 +44,7 @@ class User extends MongoAuthenticatable
         'password',
         'remember_token',
         'email_otp_hash',
+        'document_vault_otp_hash',
         'api_token_hash',
     ];
 
@@ -54,6 +59,9 @@ class User extends MongoAuthenticatable
             'email_verified_at' => 'datetime',
             'email_otp_expires_at' => 'datetime',
             'otp_last_sent_at' => 'datetime',
+            'document_vault_otp_expires_at' => 'datetime',
+            'document_vault_otp_last_sent_at' => 'datetime',
+            'document_vault_unlocked_until' => 'datetime',
             'api_token_created_at' => 'datetime',
             'password' => 'hashed',
         ];
