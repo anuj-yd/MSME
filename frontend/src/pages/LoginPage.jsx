@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAppActions } from '../state/appStore.jsx'
+import { api } from '../lib/apiClient.js'
 
 function LoginPage({ mode = 'user' }) {
   const { login, logout } = useAppActions()
@@ -13,6 +14,14 @@ function LoginPage({ mode = 'user' }) {
     () => email.trim() && password && !loading,
     [email, password, loading],
   )
+
+  const [forgotMode, setForgotMode] = useState(false)
+  const [resetStage, setResetStage] = useState(0) // 0 = request, 1 = verify+reset
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotError, setForgotError] = useState('')
+  const [forgotMessage, setForgotMessage] = useState('')
+  const [otp, setOtp] = useState('')
+  const [newPassword, setNewPassword] = useState('')
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -40,6 +49,41 @@ function LoginPage({ mode = 'user' }) {
       setError(message || 'Login failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function sendResetOtp(e) {
+    e?.preventDefault()
+    setForgotError('')
+    setForgotMessage('')
+    setForgotLoading(true)
+    try {
+      await api.post('/auth/forgot-password', { email })
+      setResetStage(1)
+      setForgotMessage('If the account exists, a reset OTP has been sent to the email.')
+    } catch (err) {
+      setForgotError(err?.response?.data?.message || err?.message || 'Failed to request reset')
+    } finally {
+      setForgotLoading(false)
+    }
+  }
+
+  async function submitReset(e) {
+    e?.preventDefault()
+    setForgotError('')
+    setForgotMessage('')
+    setForgotLoading(true)
+    try {
+      await api.post('/auth/reset-password', { email, otp, password: newPassword })
+      setForgotMessage('Password updated. You can now sign in.')
+      setForgotMode(false)
+      setResetStage(0)
+      setOtp('')
+      setNewPassword('')
+    } catch (err) {
+      setForgotError(err?.response?.data?.message || err?.response?.data?.errors?.otp?.[0] || err?.message || 'Failed to reset password')
+    } finally {
+      setForgotLoading(false)
     }
   }
 
@@ -104,6 +148,57 @@ function LoginPage({ mode = 'user' }) {
                 {error}
               </div>
             ) : null}
+
+            {!forgotMode ? (
+              <div className="text-right">
+                <button type="button" onClick={() => setForgotMode(true)} className="text-sm font-semibold text-primary-600 hover:underline">
+                  Forgot password?
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {forgotError ? (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+                    {forgotError}
+                  </div>
+                ) : null}
+                {forgotMessage ? (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                    {forgotMessage}
+                  </div>
+                ) : null}
+
+                {resetStage === 0 ? (
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={sendResetOtp} disabled={forgotLoading || !email.trim()} className="mt-2 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60">
+                      {forgotLoading ? 'Sending...' : 'Send reset OTP'}
+                    </button>
+                    <button type="button" onClick={() => setForgotMode(false)} className="mt-2 inline-flex items-center justify-center rounded-xl bg-white/30 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-white">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={submitReset} className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">OTP</label>
+                      <input value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm" placeholder="1234" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">New password</label>
+                      <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm" placeholder="New password" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button type="submit" disabled={forgotLoading || !otp || !newPassword} className="mt-2 inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
+                        {forgotLoading ? 'Saving...' : 'Reset password'}
+                      </button>
+                      <button type="button" onClick={() => { setResetStage(0); setOtp(''); setNewPassword('') }} className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        Back
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
 
             <button
               type="submit"

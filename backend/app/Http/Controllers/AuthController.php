@@ -203,6 +203,70 @@ class AuthController extends Controller
         ]);
     }
 
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        $email = mb_strtolower(trim($data['email']));
+        $user = User::query()->where('email', $email)->first();
+
+        if (! $user) {
+            return response()->json(['message' => 'If the account exists, a reset OTP has been sent.'], 200);
+        }
+
+        $now = CarbonImmutable::now();
+        $otp = str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        $user->password_reset_hash = Hash::make($otp);
+        $user->password_reset_expires_at = $now->addMinutes(self::OTP_EXPIRES_MINUTES);
+        $user->save();
+
+        $appName = (string) config('app.name', 'Renewal Portal');
+        Mail::to($user->email)->send(new \App\Mail\PasswordResetOtpMail(
+            otp: $otp,
+            expiresMinutes: self::OTP_EXPIRES_MINUTES,
+            appName: $appName,
+        ));
+
+        return response()->json(['message' => 'If the account exists, a reset OTP has been sent.']);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'otp' => ['required', 'string', 'size:4', 'regex:/^[0-9]{4}$/'],
+            'password' => ['required', 'string', 'min:6', 'max:100'],
+        ]);
+
+        $email = mb_strtolower(trim($data['email']));
+        $otp = $data['otp'];
+        $newPassword = $data['password'];
+
+        $user = User::query()->where('email', $email)->first();
+        if (! $user) {
+            throw ValidationException::withMessages(['email' => ['Invalid email or OTP.']]);
+        }
+
+        $expiresAt = $user->password_reset_expires_at ?? null;
+        if (! $user->password_reset_hash || ! $expiresAt || CarbonImmutable::parse($expiresAt)->isPast()) {
+            throw ValidationException::withMessages(['otp' => ['OTP expired. Request a new password reset.']]);
+        }
+
+        if (! Hash::check($otp, (string) $user->password_reset_hash)) {
+            throw ValidationException::withMessages(['otp' => ['Invalid OTP.']]);
+        }
+
+        $user->password = $newPassword;
+        $user->password_reset_hash = null;
+        $user->password_reset_expires_at = null;
+        $user->save();
+
+        return response()->json(['message' => 'Password updated. You can now login.']);
+    }
+
     public function logout(Request $request)
     {
         $user = $request->user();
