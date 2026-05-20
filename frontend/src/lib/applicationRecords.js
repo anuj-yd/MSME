@@ -75,7 +75,7 @@ export function calculateFeeDetails(input = {}) {
 
 export function defaultPaymentDetails(amount = 0) {
   return {
-    mode: 'UPI',
+    mode: 'Razorpay',
     transactionId: '',
     paymentDate: new Date().toISOString().slice(0, 10),
     amountPaid: amount,
@@ -86,9 +86,15 @@ export function defaultPaymentDetails(amount = 0) {
 
 export function validatePaymentDetails(paymentDetails, totalAmount) {
   if (!paymentDetails?.mode) return 'Select payment mode.'
-  if (!String(paymentDetails?.transactionId || '').trim()) return 'Enter Transaction ID / UTR number.'
+  if (paymentDetails.mode === 'Razorpay') {
+    if (Number(totalAmount || 0) <= 0) return 'Payment amount must be greater than zero.'
+    return ''
+  }
   if (!paymentDetails?.paymentDate) return 'Select payment date.'
   if (Number(paymentDetails?.amountPaid || 0) < Number(totalAmount || 0)) return 'Amount paid must match the total payable amount.'
+  if (!String(paymentDetails?.transactionId || '').trim()) {
+    return 'Enter Transaction ID / UTR number.'
+  }
   return ''
 }
 

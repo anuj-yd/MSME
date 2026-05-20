@@ -1,23 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  --font-sans: "Inter", "Segoe UI", "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --color-primary-50: #EEF5FF;
+  --color-primary-100: #EAF3FF;
+  --color-primary-200: #D8E9FF;
+  --color-primary-300: #B6D8FF;
+  --color-primary-400: #7BB8FF;
+  --color-primary-500: #4F8CFF;
+  --color-primary-600: #1E63E9;
+  --color-primary-700: #0B5ED7;
+  --color-primary-800: #0B4BB8;
+  --color-primary-900: #083A8F;
 }
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
     scroll-behavior: smooth;
   }
 
@@ -26,7 +25,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-[#F4F8FF] text-slate-900 antialiased font-sans;
   }
 
   body > .skiptranslate,
@@ -45,6 +44,34 @@
 }
 
 @layer utilities {
+  .gov-card {
+    @apply rounded-3xl border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-sm;
+  }
+
+  .gov-panel {
+    @apply rounded-[1.75rem] border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md;
+  }
+
+  .gov-button-primary {
+    @apply inline-flex items-center justify-center rounded-[14px] bg-linear-to-r from-primary-600 to-primary-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .gov-button-secondary {
+    @apply inline-flex items-center justify-center rounded-[14px] border border-primary-200 bg-white px-5 py-3 text-sm font-semibold text-primary-700 transition-all duration-300 hover:bg-primary-50 hover:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .gov-input {
+    @apply w-full rounded-[14px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10;
+  }
+
+  .gov-pill {
+    @apply inline-flex items-center rounded-full border border-primary-100 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700;
+  }
+
+  .gov-badge {
+    @apply inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700;
+  }
+
   html.dark [class*="bg-slate-50"],
   html.dark [class*="bg-slate-100"],
   html.dark [class*="bg-white"] {
@@ -59,6 +86,21 @@
 
   html.dark [class*="bg-primary-50"] {
     background-color: rgba(30, 64, 175, 0.22);
+  }
+
+  html.dark [class*="bg-[#F4F8FF]"],
+  html.dark [class*="bg-slate-50"],
+  html.dark [class*="bg-slate-100"],
+  html.dark [class*="bg-slate-200"] {
+    background-color: rgba(15, 23, 42, 0.88);
+  }
+
+  html.dark [class*="bg-primary-100"] {
+    background-color: rgba(30, 64, 175, 0.14);
+  }
+
+  html.dark [class*="bg-primary-200"] {
+    background-color: rgba(30, 64, 175, 0.10);
   }
 
   html.dark [class*="border-slate-200"],

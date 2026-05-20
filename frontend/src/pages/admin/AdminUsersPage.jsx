@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
       try {
         const data = await adminListUsers()
         if (mounted) setUsers(data)
-      } catch (e) {
+      } catch {
         if (mounted) setError('Failed to load users.')
       } finally {
         if (mounted) setLoading(false)

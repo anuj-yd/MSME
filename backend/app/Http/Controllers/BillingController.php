@@ -33,7 +33,9 @@ class BillingController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'purpose' => ['required', 'string', 'in:premium_monthly,premium_yearly'],
+            'purpose' => ['required', 'string'],
+            'amount_inr' => ['sometimes', 'numeric', 'min:1'],
+            'renewal_id' => ['sometimes', 'string'],
         ]);
 
         $keyId = (string) config('services.razorpay.key_id');
@@ -45,7 +47,23 @@ class BillingController extends Controller
             ]);
         }
 
-        $amountInr = $data['purpose'] === 'premium_yearly' ? 999 : 99;
+        if ($data['purpose'] === 'premium_yearly') {
+            $amountInr = 999;
+        } elseif ($data['purpose'] === 'premium_monthly') {
+            $amountInr = 99;
+        } elseif ($data['purpose'] === 'renewal_fee') {
+            if (empty($data['amount_inr']) || ! is_numeric($data['amount_inr'])) {
+                throw ValidationException::withMessages([
+                    'amount_inr' => ['Amount is required for renewal payment.'],
+                ]);
+            }
+            $amountInr = (int) round($data['amount_inr']);
+        } else {
+            throw ValidationException::withMessages([
+                'purpose' => ['Invalid payment purpose.'],
+            ]);
+        }
+
         $amountPaise = $amountInr * 100;
 
         $auth = base64_encode($keyId.':'.$keySecret);
@@ -75,6 +93,7 @@ class BillingController extends Controller
             'user_id' => (string) $user->getKey(),
             'provider' => 'razorpay',
             'purpose' => $data['purpose'],
+            'renewal_id' => $data['renewal_id'] ?? null,
             'amount_inr' => $amountInr,
             'currency' => 'INR',
             'status' => 'created',

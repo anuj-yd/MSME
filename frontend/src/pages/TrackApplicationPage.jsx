@@ -56,7 +56,7 @@ function TrackApplicationPage({ initialTrackingId = '' }) {
       right={
         <a
           href="#/dashboard"
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
         >
           Back
         </a>
@@ -69,18 +69,18 @@ function TrackApplicationPage({ initialTrackingId = '' }) {
               value={trackingId}
               onChange={(event) => setTrackingId(event.target.value.toUpperCase())}
               placeholder="MSME-2026-ABC123"
-              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
+              className="min-w-0 flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 font-mono text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
             />
             <button
               type="submit"
-              className="rounded-xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-primary-700"
+              className="rounded-xl bg-slate-900 dark:bg-white px-5 py-3 text-sm font-bold text-white dark:text-slate-900 shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 transition-all hover:scale-105 active:scale-95"
             >
               Track
             </button>
           </form>
 
           {searched && !record ? (
-            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-900/35 bg-rose-50 dark:bg-rose-950/20 px-4 py-3 text-sm font-semibold text-rose-700 dark:text-rose-400">
               No application found for this Tracking ID in your account.
             </div>
           ) : null}

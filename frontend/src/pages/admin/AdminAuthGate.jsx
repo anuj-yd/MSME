@@ -49,10 +49,10 @@ export function AdminAuthGate({ children }) {
 
   if (checking) {
     return (
-      <div className="grid min-h-dvh place-items-center bg-slate-50 px-6 text-center">
+      <div className="grid min-h-dvh place-items-center bg-slate-950 px-6 text-center">
         <div>
-          <div className="text-sm font-bold uppercase tracking-widest text-primary-600">Admin</div>
-          <div className="mt-3 text-lg font-semibold text-slate-900">Checking access...</div>
+          <div className="text-sm font-bold uppercase tracking-widest text-primary-300">Admin</div>
+          <div className="mt-3 text-lg font-semibold text-slate-100">Checking access...</div>
         </div>
       </div>
     )
@@ -60,9 +60,9 @@ export function AdminAuthGate({ children }) {
 
   if (error) {
     return (
-      <div className="grid min-h-dvh place-items-center bg-slate-50 px-6 text-center">
-        <div className="max-w-md rounded-2xl border border-rose-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-semibold text-rose-700">{error}</div>
+      <div className="grid min-h-dvh place-items-center bg-slate-950 px-6 text-center">
+        <div className="max-w-md rounded-2xl border border-rose-900/40 bg-slate-900 p-6 shadow-sm">
+          <div className="text-sm font-semibold text-rose-300">{error}</div>
           <a
             href="#/admin/login"
             className="mt-5 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white"

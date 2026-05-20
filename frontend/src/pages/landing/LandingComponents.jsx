@@ -1,26 +1,23 @@
-import heroImg from '../../assets/hero.png'
 import { LanguageSelect } from '../../components/GoogleTranslate.jsx'
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-xl shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-6 py-4">
         <a
           href="#top"
-          className="group flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+          className="group flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         >
-          <div className="relative grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-800 text-white shadow-lg shadow-primary-500/30 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3">
-            <span className="text-sm font-bold tracking-wider">RP</span>
+          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-primary-600 text-white shadow-md transition-transform duration-300 group-hover:scale-105">
+            <span className="text-lg font-bold tracking-tight">RP</span>
           </div>
           <div className="leading-tight">
-            <div className="text-base font-bold text-slate-900 tracking-tight">
-              Renewal Portal
-            </div>
-            <div className="text-xs font-medium text-slate-500 uppercase tracking-widest">For MSEs</div>
+            <div className="text-base font-semibold text-slate-900 tracking-tight">Renewal Portal</div>
+            <div className="text-xs uppercase tracking-[0.35em] text-slate-500">For MSEs</div>
           </div>
         </a>
 
-        <nav className="hidden items-center gap-2 md:flex">
+        <nav className="hidden items-center gap-4 md:flex">
           <NavLink href="#features">Features</NavLink>
           <NavLink href="#how">Process</NavLink>
           <NavLink href="#benefits">Benefits</NavLink>
@@ -31,19 +28,19 @@ export function SiteHeader() {
           <LanguageSelect compact />
           <a
             href="#/login"
-            className="hidden rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 md:inline-flex"
+            className="rounded-xl border border-primary-100 bg-primary-50 px-4 py-2.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-100 dark:border-primary-900/40 dark:bg-primary-950/20 dark:text-primary-300"
           >
             User login
           </a>
           <a
             href="#/admin/login"
-            className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50 md:inline-flex"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            Admin
+            Admin login
           </a>
           <a
             href="#/register"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary-500/25 transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+            className="inline-flex items-center justify-center rounded-xl bg-linear-to-r from-primary-600 to-primary-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-transform duration-300 hover:-translate-y-0.5"
           >
             Sign up
           </a>
@@ -57,7 +54,7 @@ function NavLink({ href, children }) {
   return (
     <a
       href={href}
-      className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-slate-100/80 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+      className="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-primary-200"
     >
       {children}
     </a>
@@ -66,101 +63,83 @@ function NavLink({ href, children }) {
 
 export function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden pt-8 pb-20">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -left-20 top-0 h-[500px] w-[500px] rounded-full bg-primary-400/20 blur-[100px]" />
-        <div className="absolute -right-20 top-40 h-[400px] w-[400px] rounded-full bg-indigo-500/15 blur-[100px]" />
-        <div className="absolute left-1/2 top-[30rem] h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-blue-300/20 blur-[120px]" />
-      </div>
+    <section id="top" className="relative overflow-hidden pb-20 pt-6 bg-[#F4F8FF] dark:bg-slate-950">
+      <div className="absolute inset-0 -z-10 bg-linear-to-br from-white via-primary-100 to-primary-100" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.08),transparent_30%)]" />
 
-      <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
-        <div className="z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/60 px-4 py-1.5 text-xs font-semibold text-primary-700 shadow-sm backdrop-blur-md">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75"></span>
-              <span className="relative inline-flex size-2 rounded-full bg-primary-500"></span>
-            </span>
-            Smart Renewal for Micro &amp; Small Enterprises
+      <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-6 py-24 lg:grid-cols-2">
+        <div className="space-y-8">
+          <div className="inline-flex items-center gap-3 rounded-full border border-primary-100 bg-primary-50 px-4 py-2 text-xs uppercase tracking-[0.35em] text-primary-700 shadow-sm dark:border-primary-900/30 dark:bg-primary-950/25 dark:text-primary-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary-700" />
+            Renewal portal for MSEs
           </div>
 
-          <h1 className="mt-6 text-balance text-5xl font-extrabold tracking-tight text-slate-900 md:text-6xl md:leading-[1.1]">
-            Renew licenses <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-600">without the hassle.</span>
+          <h1 className="max-w-4xl text-4xl font-black tracking-tight text-slate-900 dark:text-slate-100 md:text-5xl">
+            Simplify renewals. Stay compliant.
           </h1>
 
-          <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-slate-600">
-            Track applications, manage documents, and never miss a deadline. Experience a faster flow, clear status tracking, and smart automated reminders.
+          <p className="max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300 sm:text-xl">
+            Manage applications, approvals, and documents from one secure dashboard built for modern enterprises.
           </p>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <a
-              href="#/register"
-              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+              href="#/login"
+              className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-primary-600 to-primary-700 px-8 py-4 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5"
             >
-              Start Renewal Now
+              User login
             </a>
             <a
               href="#/admin/login"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white/80 backdrop-blur-md px-6 py-3.5 text-base font-semibold text-slate-800 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-800 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              Admin console
-            </a>
-            <a
-              href="#how"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-md px-6 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-            >
-              See how it works
+              Admin login
             </a>
           </div>
 
-          <dl className="mt-12 grid grid-cols-3 gap-6 border-t border-slate-200/60 pt-8 sm:max-w-lg">
-            <Stat k="All in 1" unit="portal" />
-            <Stat k="24/7" unit="access" />
-            <Stat k="Smart" unit="alerts" />
+          <dl className="grid gap-4 sm:grid-cols-3">
+            <Stat k="Renewals" unit="Tracked" />
+            <Stat k="Approvals" unit="Managed" />
+            <Stat k="Documents" unit="Secured" />
           </dl>
         </div>
 
-        <div className="relative z-10 lg:ml-auto w-full max-w-md">
-          <div className="absolute inset-0 -z-10 translate-x-4 translate-y-4 rounded-[2.5rem] bg-gradient-to-br from-primary-200 to-indigo-200 blur-xl opacity-60" />
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/50 bg-white/70 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <div className="size-2.5 rounded-full bg-rose-400"></div>
-                <div className="size-2.5 rounded-full bg-amber-400"></div>
-                <div className="size-2.5 rounded-full bg-emerald-400"></div>
-              </div>
-              <span className="rounded-full bg-slate-100/80 px-3 py-1 text-xs font-semibold text-slate-500">
-                Live Preview
-              </span>
-            </div>
-
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <CardMetric label="Pending Renewals" value="3" hint="Due in 15 days" color="rose" />
-                <CardMetric label="Documents" value="12" hint="Verified: 9" color="emerald" />
-              </div>
-
-              <div className="rounded-2xl border border-white/60 bg-white/50 p-5 shadow-sm backdrop-blur-md">
-                <div className="flex items-center justify-between text-sm mb-4">
-                  <div className="font-semibold text-slate-800">Application Status</div>
-                  <div className="text-xs font-medium text-slate-500">Today</div>
+        <div className="relative lg:ml-auto">
+          <div className="absolute -left-8 top-10 h-28 w-28 rounded-full bg-primary-200/40 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200 dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.12),transparent_25%)]" />
+            <div className="relative z-10 flex flex-col gap-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Dashboard overview</p>
+                  <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Approval pipeline</h2>
                 </div>
-                <div className="space-y-3">
-                  <StatusRow label="Trade License" status="In review" tone="info" />
-                  <StatusRow label="Udyam Update" status="Approved" tone="ok" />
-                  <StatusRow label="Shop & Est." status="Action needed" tone="warn" />
+                <span className="rounded-full border border-slate-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-slate-700 dark:bg-primary-950/20 dark:text-primary-300">Secure</span>
+              </div>
+
+              <div className="grid gap-4 rounded-4xl bg-primary-50 p-5 border border-slate-200 dark:border-slate-700 dark:bg-primary-950/20">
+                <div className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                  <span>Application status</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Live</span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                  <span>Document vault</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Encrypted</span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                  <span>Compliance alerts</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Instant</span>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden rounded-2xl border border-primary-100 bg-gradient-to-br from-primary-50 to-white p-5 shadow-sm">
-                <div className="flex flex-col gap-1 relative z-10">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-primary-600">Next Reminder</div>
-                  <div className="text-sm font-medium text-slate-700 mt-1">
-                    Upload address proof by <span className="font-bold text-slate-900">Friday</span>
-                  </div>
-                </div>
-                <div className="absolute right-[-20px] bottom-[-20px] opacity-20 transform rotate-12 scale-150">
-                  <span className="text-8xl">📅</span>
-                </div>
+              <div className="rounded-4xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <div className="text-xs uppercase tracking-[0.35em] text-primary-700 dark:text-primary-200">Support</div>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">Get help with renewals, documents, and approvals from our support team.</p>
+              </div>
+
+              <div className="rounded-4xl border border-slate-200 bg-primary-50 p-5 dark:border-slate-700 dark:bg-primary-950/20">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Premium workflow</div>
+                <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">Centralized renewals, secure document access, and fast status updates.</p>
               </div>
             </div>
           </div>
@@ -173,51 +152,23 @@ export function Hero() {
 function Stat({ k, unit }) {
   return (
     <div>
-      <div className="text-2xl font-extrabold text-slate-900">{k}</div>
-      <div className="mt-1 text-sm font-medium text-slate-500 uppercase tracking-widest">{unit}</div>
-    </div>
-  )
-}
-
-function CardMetric({ label, value, hint, color }) {
-  return (
-    <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-sm backdrop-blur-md transition-transform hover:-translate-y-1">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-2 text-3xl font-bold text-slate-900">{value}</div>
-      <div className={`mt-2 text-xs font-medium ${color === 'rose' ? 'text-rose-600' : 'text-emerald-600'}`}>{hint}</div>
-    </div>
-  )
-}
-
-function StatusRow({ label, status, tone }) {
-  const toneClasses =
-    tone === 'ok'
-      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-      : tone === 'warn'
-        ? 'bg-amber-100 text-amber-800 border-amber-200'
-        : 'bg-primary-100 text-primary-700 border-primary-200'
-
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-white/60 px-3 py-2 border border-white/40 shadow-sm transition-colors hover:bg-white">
-      <div className="truncate text-sm font-medium text-slate-700">{label}</div>
-      <span className={`shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${toneClasses}`}>
-        {status}
-      </span>
+      <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{k}</div>
+      <div className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{unit}</div>
     </div>
   )
 }
 
 export function TrustBar() {
   return (
-    <section className="border-y border-slate-200/60 bg-white/50 py-10 backdrop-blur-sm">
+    <section className="border-y border-slate-200 bg-primary-100 py-10 dark:border-slate-700 dark:bg-slate-950">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 md:flex-row md:justify-between">
-        <p className="text-center text-sm font-medium text-slate-600 md:text-left">
-          Trusted for simplifying renewals with clear steps & fewer follow-ups.
+        <p className="text-center text-sm font-semibold text-slate-700 dark:text-slate-300 md:text-left">
+          Trusted for secure renewals, fast approvals, and reliable support.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Badge icon="🔒">Bank-level Security</Badge>
-          <Badge icon="📄">100% Paperless</Badge>
-          <Badge icon="⚡">Real-time Tracking</Badge>
+          <Badge icon="🔒">Secure storage</Badge>
+          <Badge icon="📄">Document tracking</Badge>
+          <Badge icon="⚡">Real-time alerts</Badge>
         </div>
       </div>
     </section>
@@ -226,7 +177,7 @@ export function TrustBar() {
 
 function Badge({ icon, children }) {
   return (
-    <span className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md">
+    <span className="flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50 px-4 py-2 text-xs font-bold text-primary-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-primary-100 dark:border-primary-900/30 dark:bg-primary-950/20 dark:text-primary-300 dark:hover:bg-primary-900/40">
       <span>{icon}</span> {children}
     </span>
   )
@@ -267,13 +218,13 @@ export function Features() {
   ]
 
   return (
-    <section id="features" className="relative mx-auto w-full max-w-6xl px-6 py-24">
+    <section id="features" className="relative mx-auto w-full max-w-6xl px-6 py-24 bg-white dark:bg-slate-950">
       <div className="max-w-2xl">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-          Everything you need for seamless compliance
+        <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+          Everything you need for seamless experiences
         </h2>
-        <p className="mt-4 text-lg text-slate-600">
-          Replace scattered documents and manual tracking with our unified, intelligent portal.
+        <p className="mt-4 text-lg font-medium text-slate-600 dark:text-slate-300">
+          Replace scattered journeys with a unified, premium experience built for modern exploration.
         </p>
       </div>
 
@@ -288,16 +239,14 @@ export function Features() {
 
 function FeatureCard({ icon, title, desc }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/10">
-      <div className="absolute -right-10 -top-10 size-40 rounded-full bg-primary-50 opacity-0 transition-opacity group-hover:opacity-100"></div>
+    <div className="group relative overflow-hidden rounded-4xl border border-slate-200 bg-[#F4F8FF] p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-200 dark:bg-slate-900/90 dark:border-slate-700">
+      <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary-100 opacity-30 transition-opacity duration-300 group-hover:opacity-100" />
       <div className="relative">
-        <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-indigo-100 text-2xl shadow-inner">
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-primary-100 text-primary-700 shadow-inner">
           {icon}
         </div>
-        <h3 className="mt-6 text-xl font-bold text-slate-900">{title}</h3>
-        <p className="mt-3 text-sm leading-relaxed text-slate-600">
-          {desc}
-        </p>
+        <h3 className="mt-6 text-xl font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{desc}</p>
       </div>
     </div>
   )
@@ -324,39 +273,36 @@ export function HowItWorks() {
   ]
 
   return (
-    <section id="how" className="relative py-24">
-      <div className="absolute inset-0 -z-10 bg-slate-900"></div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900 to-slate-900"></div>
-      
+    <section id="how" className="relative py-24 bg-primary-50 dark:bg-slate-950">
       <div className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
             Four steps to renewal
           </h2>
-          <p className="mt-4 text-lg text-slate-300">
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
             A streamlined process designed to save you time and eliminate errors.
           </p>
         </div>
 
         <div className="mt-16 grid gap-6 md:grid-cols-4">
           {steps.map((s, idx) => (
-            <div key={s.title} className="relative rounded-[2rem] border border-white/10 bg-white/5 p-8 backdrop-blur-md transition-colors hover:bg-white/10">
-              <div className="text-5xl font-black text-white/10">{idx + 1}</div>
-              <h3 className="mt-4 text-lg font-bold text-white">{s.title}</h3>
-              <p className="mt-2 text-sm text-slate-300">{s.desc}</p>
+            <div key={s.title} className="relative rounded-4xl border border-slate-200 bg-white p-8 transition-colors hover:bg-primary-50/70 dark:border-slate-700 dark:bg-slate-900">
+              <div className="text-5xl font-black text-primary-100">{idx + 1}</div>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-slate-100">{s.title}</h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{s.desc}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-16 overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-primary-600 to-indigo-600 p-1">
-          <div className="rounded-[2.4rem] bg-slate-900/50 backdrop-blur-xl px-8 py-12 text-center md:px-12 md:py-16">
-            <h3 className="text-2xl font-bold text-white md:text-3xl">Ready to simplify your renewals?</h3>
-            <p className="mt-4 text-slate-300 max-w-xl mx-auto">Join thousands of MSEs who have already streamlined their compliance with our unified portal.</p>
+        <div className="mt-16 overflow-hidden rounded-[2.5rem] bg-linear-to-r from-primary-600 to-primary-400 p-1 shadow-xl shadow-primary-500/10">
+          <div className="rounded-[2.4rem] bg-white px-8 py-12 text-center md:px-12 md:py-16 dark:bg-slate-900">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 md:text-3xl">Ready to simplify your journey?</h3>
+            <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-xl mx-auto">Join teams who are already managing renewals, approvals, and documents from a single secure portal.</p>
             <a
-              href="#/register"
-              className="mt-8 inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-base font-bold text-primary-900 shadow-xl transition-transform hover:scale-105"
+              href="#/login"
+              className="mt-8 inline-flex items-center justify-center rounded-2xl bg-linear-to-r from-primary-700 to-primary-600 px-8 py-4 text-base font-bold text-white shadow-md transition-transform hover:scale-105"
             >
-              Get Started for Free
+              User login
             </a>
           </div>
         </div>
@@ -386,28 +332,40 @@ export function Benefits() {
   ]
 
   return (
-    <section id="benefits" className="relative mx-auto w-full max-w-6xl px-6 py-24">
+    <section id="benefits" className="relative mx-auto w-full max-w-6xl px-6 py-24 bg-white dark:bg-slate-950">
       <div className="grid gap-16 md:grid-cols-2 md:items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-            Benefits that drive your business forward
+          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+            Benefits that make renewal simple and reliable
           </h2>
-          <p className="mt-6 text-lg text-slate-600 leading-relaxed">
-            We understand that renewals can be an incredibly confusing process for micro and small enterprises. Our platform is meticulously engineered to provide absolute clarity and unparalleled speed.
+          <p className="mt-6 text-lg font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
+            A smooth compliance experience with fewer delays, better visibility, and secure document handling.
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <span className="rounded-full bg-primary-50 px-4 py-2 text-sm font-semibold text-primary-700">Multi-renewal Support</span>
-            <span className="rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">Document Reuse</span>
-            <span className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">Clear Timeline</span>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <span className="rounded-full bg-primary-100 px-4 py-2 text-sm font-bold text-primary-700 dark:bg-primary-950/20 dark:text-primary-300">Fast approvals</span>
+            <span className="rounded-full bg-primary-50 px-4 py-2 text-sm font-bold text-slate-700 dark:bg-slate-900/80 dark:text-slate-200">Document vault</span>
+            <span className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300">Automated alerts</span>
+          </div>
+
+          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-primary-50 p-5 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-primary-950/20">
+            <div className="flex flex-col sm:flex-row gap-5 items-center">
+              <div className="h-20 w-20 rounded-2xl border border-slate-200 bg-white shadow-inner dark:border-slate-700 dark:bg-slate-900" />
+              <div className="text-center sm:text-left">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Secure document vault</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                  Your renewal documents stay protected, easy to access, and ready for every application.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {points.map((p) => (
-            <div key={p.title} className="rounded-[1.5rem] border border-slate-200/60 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg">
-              <h3 className="text-base font-bold text-slate-900">{p.title}</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">{p.desc}</p>
+            <div key={p.title} className="rounded-3xl border border-slate-200 bg-[#F4F8FF] p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary-200 hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-900/90">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{p.title}</h3>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{p.desc}</p>
             </div>
           ))}
         </div>
@@ -433,32 +391,30 @@ export function Faq() {
   ]
 
   return (
-    <section id="faq" className="bg-slate-50 py-24">
+    <section id="faq" className="bg-primary-50 py-24 dark:bg-slate-950">
       <div className="mx-auto w-full max-w-4xl px-6">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-            Frequently Asked Questions
-          </h2>
-          <p className="mt-4 text-lg text-slate-600">Everything you need to know about the platform.</p>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Frequently Asked Questions</h2>
+          <p className="mt-4 text-lg font-medium text-slate-600 dark:text-slate-300">Everything you need to know about your journey.</p>
         </div>
 
         <div className="mt-12 grid gap-4">
           {faqs.map((f) => (
             <details
               key={f.q}
-              className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all open:bg-white hover:shadow-md"
+              className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all open:border-primary-200 open:bg-primary-50 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:open:bg-slate-950"
             >
-              <summary className="cursor-pointer list-none text-base font-bold text-slate-900 focus-visible:outline-none">
+              <summary className="cursor-pointer list-none text-base font-bold text-slate-900 dark:text-slate-100 focus-visible:outline-none">
                 <span className="flex items-center justify-between gap-4">
                   {f.q}
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform group-open:rotate-180">
-                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-300 transition-transform duration-300 group-open:rotate-180">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </span>
                 </span>
               </summary>
-              <div className="mt-4 text-sm leading-relaxed text-slate-600 pr-12">
+              <div className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300 pr-12">
                 {f.a}
               </div>
             </details>
@@ -471,48 +427,68 @@ export function Faq() {
 
 export function SiteFooter() {
   return (
-    <footer className="bg-white pb-8 pt-16">
+    <footer className="bg-white pb-8 pt-16 border-t border-slate-200 dark:bg-slate-950 dark:border-slate-700">
       <div className="mx-auto w-full max-w-6xl px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
-              <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-800 text-white shadow-md">
-                <span className="text-sm font-bold tracking-wider">RP</span>
+              <div className="grid h-12 w-12 place-items-center rounded-3xl bg-primary-600 text-white shadow-md">
+                <span className="text-sm font-bold tracking-wider">R</span>
               </div>
               <div>
-                <div className="text-base font-bold text-slate-900 tracking-tight">Renewal Portal</div>
-                <div className="text-xs font-medium text-slate-500 uppercase tracking-widest">For MSEs</div>
+                <div className="text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight">Renewal Portal</div>
+                <div className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Enterprise renewal system</div>
               </div>
             </div>
-            <p className="mt-6 max-w-sm text-sm text-slate-600 leading-relaxed">
-              Empowering micro and small enterprises with a unified, intelligent compliance and renewal management platform.
+            <p className="mt-6 max-w-sm text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              A secure platform for managing business renewals, approvals, and document workflows in one place.
             </p>
           </div>
 
           <div>
-            <h4 className="text-sm font-bold text-slate-900">Platform</h4>
-            <ul className="mt-6 space-y-4 text-sm text-slate-600">
-              <li><a href="#features" className="hover:text-primary-600 transition-colors">Features</a></li>
-              <li><a href="#how" className="hover:text-primary-600 transition-colors">How it works</a></li>
-              <li><a href="#benefits" className="hover:text-primary-600 transition-colors">Benefits</a></li>
-              <li><a href="#faq" className="hover:text-primary-600 transition-colors">FAQ</a></li>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Navigate</h4>
+            <ul className="mt-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
+              <li><a href="#features" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Features</a></li>
+              <li><a href="#how" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Process</a></li>
+              <li><a href="#benefits" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Benefits</a></li>
+              <li><a href="#faq" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">FAQ</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-sm font-bold text-slate-900">Legal</h4>
-            <ul className="mt-6 space-y-4 text-sm text-slate-600">
-              <li><a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-primary-600 transition-colors">Contact Support</a></li>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Connect</h4>
+            <ul className="mt-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors">Contact Support</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col items-center justify-between border-t border-slate-200 pt-8 sm:flex-row">
-          <p className="text-sm text-slate-500">© {new Date().getFullYear()} Renewal Portal. All rights reserved.</p>
+        <div className="mt-16 flex flex-col items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-8 sm:flex-row">
+          <p className="text-sm text-slate-500 dark:text-slate-400">© {new Date().getFullYear()} Renewal Portal. All rights reserved.</p>
         </div>
       </div>
     </footer>
+  )
+}
+
+export function SupportWidget() {
+  return (
+    <div className="fixed bottom-6 right-6 z-50 hidden w-full max-w-xs lg:block">
+      <div className="rounded-4xl border border-primary-100 bg-white p-4 shadow-2xl shadow-slate-200 dark:border-primary-900/30 dark:bg-slate-900 dark:shadow-slate-950/40">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-primary-700 dark:text-primary-300">How may we help you today?</p>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Instant support for renewals, compliance, and document questions.</p>
+          </div>
+          <div className="grid h-12 w-12 place-items-center rounded-3xl bg-primary-600 text-white shadow-md">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

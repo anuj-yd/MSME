@@ -38,7 +38,7 @@ function OtpApprovalPage({ renewalId }) {
       right={
         <a
           href="#/dashboard"
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
         >
           Back
         </a>
@@ -49,12 +49,12 @@ function OtpApprovalPage({ renewalId }) {
         description="Security: your OTP is encrypted, expires quickly, and can be viewed only once by the requesting admin."
       >
         <form onSubmit={onSubmit} className="max-w-md">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-400">
             OTP
             <input
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\s/g, ''))}
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-lg tracking-[0.4em] outline-none focus:ring-2 focus:ring-[#1E5AA6]/30"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-3.5 text-center text-lg font-bold tracking-[0.4em] text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
               inputMode="numeric"
               placeholder="••••"
               required
@@ -62,13 +62,13 @@ function OtpApprovalPage({ renewalId }) {
           </label>
 
           {error ? (
-            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-900/35 bg-rose-50 dark:bg-rose-950/20 px-3 py-2 text-sm font-semibold text-rose-700 dark:text-rose-400">
               {error}
             </div>
           ) : null}
 
           {message ? (
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+            <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-900/35 bg-emerald-50 dark:bg-emerald-950/20 px-3 py-2 text-sm font-semibold text-emerald-900 dark:text-emerald-400">
               {message}
             </div>
           ) : null}
@@ -76,7 +76,7 @@ function OtpApprovalPage({ renewalId }) {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#1E5AA6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:opacity-60"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 dark:bg-white px-4 py-3.5 text-sm font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-md transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
           >
             {loading ? 'Submitting…' : 'Submit OTP'}
           </button>

@@ -14,6 +14,7 @@ import {
   saveApplicationRecord,
   validatePaymentDetails,
 } from '../lib/applicationRecords.js'
+import { loadRazorpayCheckout } from '../lib/razorpay.js'
 
 const FORM_STEPS = [
   { id: 'basic', title: 'Basic Details' },
@@ -29,7 +30,7 @@ const DRAFT_SAVE_DELAY_MS = 600
 
 function RenewalDetailPage({ id }) {
   const { documents, user, renewalTypes } = useAppState()
-  const { getRenewal, updateRenewalDraft, submitRenewal, refreshRenewals } = useAppActions()
+  const { getRenewal, updateRenewalDraft, submitRenewal, refreshRenewals, createRazorpayOrder, verifyRazorpayPayment } = useAppActions()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -45,9 +46,18 @@ function RenewalDetailPage({ id }) {
   const [draftMessage, setDraftMessage] = useState('')
   const [feeDetails, setFeeDetails] = useState(calculateFeeDetails())
   const [paymentDetails, setPaymentDetails] = useState(defaultPaymentDetails())
+  const [paymentMessage, setPaymentMessage] = useState('')
   const [applicationRecord, setApplicationRecord] = useState(null)
 
   const draftKey = useMemo(() => `renewal-draft:${id}`, [id])
+
+  const submitButtonLabel = submitting
+    ? 'Submitting...'
+    : paymentDetails.mode === 'Razorpay' && currentStep === REVIEW_STEP_INDEX
+      ? 'Pay & Submit'
+      : currentStep === REVIEW_STEP_INDEX
+        ? 'Submit Application'
+        : 'Review & Submit'
 
   useEffect(() => {
     let mounted = true
@@ -116,7 +126,10 @@ function RenewalDetailPage({ id }) {
   const schemaItems = useMemo(() => (Array.isArray(type?.fields_schema) ? type.fields_schema : []), [type])
   const fieldsByStep = useMemo(() => groupFieldsByStep(schemaItems), [schemaItems])
   const validationErrors = useMemo(() => validateFields(schemaItems, fields), [schemaItems, fields])
-  const currentStepFields = fieldsByStep[FORM_STEPS[currentStep]?.id] || []
+  const currentStepFields = useMemo(
+    () => fieldsByStep[FORM_STEPS[currentStep]?.id] || [],
+    [fieldsByStep, currentStep],
+  )
   const currentStepErrors = useMemo(
     () => getStepErrors(currentStepFields, validationErrors),
     [currentStepFields, validationErrors],
@@ -288,6 +301,65 @@ function RenewalDetailPage({ id }) {
     }
   }
 
+  async function processRazorpayPayment() {
+    if (!renewal) throw new Error('Renewal not loaded.')
+    const amount = Number(feeDetails.totalAmount || 0)
+    if (amount <= 0) {
+      throw new Error('Invalid payment amount.')
+    }
+
+    const orderData = await createRazorpayOrder({
+      purpose: 'renewal_fee',
+      amount_inr: Math.round(amount),
+      renewal_id: renewal._id || renewal.id,
+    })
+
+    if (!orderData?.order?.id) {
+      throw new Error('Could not create Razorpay order.')
+    }
+
+    const loaded = await loadRazorpayCheckout()
+    if (!loaded) {
+      throw new Error('Unable to load Razorpay checkout.')
+    }
+
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: 'MSME Renewal Portal',
+        description: `${type?.name || 'Renewal'} application fee`,
+        order_id: orderData.order.id,
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+        },
+        handler: async function (response) {
+          try {
+            await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+            resolve(response)
+          } catch (error) {
+            reject(error)
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            reject(new Error('Razorpay payment was cancelled.'))
+          },
+        },
+        theme: { color: '#1E5AA6' },
+      }
+
+      const checkout = new window.Razorpay(options)
+      checkout.open()
+    })
+  }
+
   async function onSubmit() {
     if (!renewal) return
     if (!canSubmit) {
@@ -304,9 +376,37 @@ function RenewalDetailPage({ id }) {
     }
 
     setError('')
+    setFormError('')
+    setPaymentMessage('')
     setSubmitting(true)
     try {
       await persistDraft()
+
+      let updatedPaymentDetails = paymentDetails
+      if (paymentDetails.mode === 'Razorpay') {
+        setPaymentMessage('Opening Razorpay payment...')
+        const response = await processRazorpayPayment()
+        updatedPaymentDetails = {
+          ...paymentDetails,
+          transactionId: response.razorpay_payment_id,
+          paymentStatus: 'Paid',
+        }
+        setPaymentDetails(updatedPaymentDetails)
+        setPaymentMessage('Payment successful. Saving payment details...')
+
+        await updateRenewalDraft(renewal._id || renewal.id, {
+          fields: {
+            ...fields,
+            payment_details: updatedPaymentDetails,
+            fee_details: calculateFeeDetails({
+              ...feeDetails,
+              licenseType: feeDetails.licenseType || type?.name || renewal.renewal_type_code,
+            }),
+          },
+          documentIds: selectedDocs,
+        })
+      }
+
       const updated = await submitRenewal(renewal._id || renewal.id)
       setRenewal(updated)
       const record = saveApplicationRecord({
@@ -325,7 +425,7 @@ function RenewalDetailPage({ id }) {
         paymentDetails: {
           ...paymentDetails,
           amountPaid: Number(paymentDetails.amountPaid || feeDetails.totalAmount),
-          paymentStatus: 'Pending Verification',
+          paymentStatus: paymentDetails.mode === 'Razorpay' ? 'Paid' : 'Pending Verification',
         },
         status: normalizeStatus(updated.status),
         trackingId: updated.fields?.tracking_id || applicationRecord?.trackingId,
@@ -372,7 +472,7 @@ function RenewalDetailPage({ id }) {
                 disabled={submitting || loading || (currentStep === REVIEW_STEP_INDEX ? !canSubmit : !canReview)}
                 className="rounded-xl bg-[#1E5AA6] px-3 py-2 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:opacity-60"
               >
-                {submitting ? 'Submitting...' : currentStep === REVIEW_STEP_INDEX ? 'Submit' : 'Review & Submit'}
+                {currentStep === REVIEW_STEP_INDEX ? submitButtonLabel : 'Review & Submit'}
               </button>
             </>
           ) : (
@@ -419,6 +519,12 @@ function RenewalDetailPage({ id }) {
               {formError ? (
                 <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                   {formError}
+                </div>
+              ) : null}
+
+              {paymentMessage ? (
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  {paymentMessage}
                 </div>
               ) : null}
 
@@ -496,14 +602,21 @@ function RenewalDetailPage({ id }) {
                         Next
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={onSubmit}
-                        disabled={submitting || !canSubmit}
-                        className="rounded-xl bg-[#1E5AA6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {submitting ? 'Submitting...' : 'Submit Application'}
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={onSubmit}
+                          disabled={submitting || !canSubmit}
+                          className="rounded-xl bg-[#1E5AA6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {submitButtonLabel}
+                        </button>
+                        {paymentDetails.mode === 'Razorpay' ? (
+                          <div className="text-xs text-slate-500">
+                            The same button will open Razorpay and automatically submit after successful payment.
+                          </div>
+                        ) : null}
+                      </div>
                     )}
                   </div>
                 </div>

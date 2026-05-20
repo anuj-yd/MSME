@@ -106,24 +106,24 @@ function PricingPage() {
   }
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-slate-50 text-slate-900">
+    <div className="relative min-h-dvh overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-primary-200/30 blur-[110px]" />
-        <div className="absolute -right-24 top-40 h-[460px] w-[460px] rounded-full bg-emerald-200/25 blur-[120px]" />
+        <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-primary-200/30 dark:bg-primary-950/15 blur-[110px]" />
+        <div className="absolute -right-24 top-40 h-[460px] w-[460px] rounded-full bg-emerald-200/25 dark:bg-emerald-950/10 blur-[120px]" />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-xl shadow-sm">
+      <header className="sticky top-0 z-40 border-b border-white/50 dark:border-slate-850 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl shadow-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <a href="#/dashboard" className="flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400">
             <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-800 text-white shadow-md">
               <span className="text-sm font-bold tracking-wider">RP</span>
             </div>
             <div>
-              <div className="text-base font-bold tracking-tight text-slate-900">Premium Access</div>
-              <div className="text-xs font-medium uppercase tracking-widest text-slate-500">Renewal Portal for MSEs</div>
+              <div className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Premium Access</div>
+              <div className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Renewal Portal for MSEs</div>
             </div>
           </a>
-          <a className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50" href="#/dashboard">
+          <a className="rounded-xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-bold text-slate-800 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors" href="#/dashboard">
             Dashboard
           </a>
         </div>
@@ -133,13 +133,13 @@ function PricingPage() {
         <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="space-y-6">
             <div>
-              <div className="inline-flex rounded-full border border-primary-100 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700 shadow-sm">
+              <div className="inline-flex rounded-full border border-primary-100 dark:border-primary-900/35 bg-white/80 dark:bg-slate-900 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700 dark:text-primary-400 shadow-sm">
                 Premium plan
               </div>
-              <h1 className="mt-5 max-w-xl text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
+              <h1 className="mt-5 max-w-xl text-4xl font-black tracking-tight text-slate-950 dark:text-white md:text-5xl">
                 Unlock faster renewals and complete compliance records.
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
                 Get report downloads, complete application details, certificate access, and priority support for your renewal workflow.
               </p>
             </div>
@@ -156,8 +156,8 @@ function PricingPage() {
             {error ? <StatusBox tone="error">{error}</StatusBox> : null}
             {message ? <StatusBox tone="success">{message}</StatusBox> : null}
 
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 text-sm text-slate-700 shadow-sm backdrop-blur">
-              <div className="font-bold text-slate-900">Checkout note</div>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-850 bg-white/80 dark:bg-slate-900/60 p-5 text-sm text-slate-700 dark:text-slate-350 shadow-sm backdrop-blur">
+              <div className="font-bold text-slate-905 dark:text-white">Checkout note</div>
               <p className="mt-2 leading-relaxed">
                 Razorpay checkout is configured for Net Banking in test mode. Backend must have <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code> configured.
               </p>
@@ -177,9 +177,9 @@ function PricingPage() {
           </div>
         </section>
 
-        <section className="mt-10 rounded-3xl border border-white/70 bg-white/70 p-6 shadow-sm backdrop-blur-xl">
-          <h2 className="text-xl font-black tracking-tight text-slate-900">What premium unlocks</h2>
-          <p className="mt-1 text-sm text-slate-600">Designed for repeated compliance work, not just one-time checkout.</p>
+        <section className="mt-10 rounded-3xl border border-white/70 dark:border-slate-850 bg-white/70 dark:bg-slate-900/40 p-6 shadow-sm backdrop-blur-xl">
+          <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">What premium unlocks</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Designed for repeated compliance work, not just one-time checkout.</p>
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             {[
               ['Detailed reports', 'Download renewal summaries and keep records audit-ready.'],
@@ -187,9 +187,9 @@ function PricingPage() {
               ['Certificate access', 'Download certificates after approval and verification.'],
               ['Priority support', 'Get faster help for renewal and document issues.'],
             ].map(([title, desc]) => (
-              <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="text-sm font-bold text-slate-900">{title}</div>
-                <div className="mt-2 text-sm leading-relaxed text-slate-600">{desc}</div>
+              <div key={title} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{title}</div>
+                <div className="mt-2 text-sm leading-relaxed text-slate-655 dark:text-slate-400">{desc}</div>
               </div>
             ))}
           </div>
@@ -203,8 +203,8 @@ function PlanCard({ plan, loading, disabled, onPay }) {
   return (
     <div
       className={[
-        'relative overflow-hidden rounded-3xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl',
-        plan.highlight ? 'border-primary-200 ring-4 ring-primary-500/10' : 'border-slate-200',
+        'relative overflow-hidden rounded-3xl border bg-white dark:bg-slate-900/40 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-700',
+        plan.highlight ? 'border-primary-200 dark:border-primary-800/80 ring-4 ring-primary-500/10 dark:ring-primary-950/20' : 'border-slate-200 dark:border-slate-850',
       ].join(' ')}
     >
       {plan.highlight ? (
@@ -214,22 +214,22 @@ function PlanCard({ plan, loading, disabled, onPay }) {
       ) : null}
 
       <div className="pr-20">
-        <div className="text-sm font-black uppercase tracking-wider text-primary-700">{plan.name}</div>
-        <p className="mt-3 min-h-12 text-sm leading-relaxed text-slate-600">{plan.desc}</p>
+        <div className="text-sm font-black uppercase tracking-wider text-primary-700 dark:text-primary-400">{plan.name}</div>
+        <p className="mt-3 min-h-12 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{plan.desc}</p>
       </div>
 
       <div className="mt-6">
         <div className="flex items-end gap-2">
-          <span className="text-4xl font-black tracking-tight text-slate-950">{plan.price}</span>
-          <span className="pb-1 text-sm font-semibold text-slate-500">{plan.cadence}</span>
+          <span className="text-4xl font-black tracking-tight text-slate-950 dark:text-white">{plan.price}</span>
+          <span className="pb-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{plan.cadence}</span>
         </div>
-        <div className="mt-2 text-xs font-bold uppercase tracking-wider text-emerald-700">{plan.savings}</div>
+        <div className="mt-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">{plan.savings}</div>
       </div>
 
       <ul className="mt-6 space-y-3">
         {plan.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-3 text-sm font-medium text-slate-700">
-            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-[10px] font-black text-emerald-700">OK</span>
+          <li key={feature} className="flex items-start gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[10px] font-black text-emerald-700 dark:text-emerald-400">✓</span>
             <span>{feature}</span>
           </li>
         ))}
@@ -239,10 +239,10 @@ function PlanCard({ plan, loading, disabled, onPay }) {
         onClick={onPay}
         disabled={disabled}
         className={[
-          'mt-7 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-black text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60',
+          'mt-7 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-black text-white dark:text-slate-900 shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60 hover:scale-[1.02] active:scale-[0.98]',
           plan.highlight
-            ? 'bg-gradient-to-r from-primary-600 to-indigo-600 shadow-primary-500/25 hover:scale-[1.02]'
-            : 'bg-slate-900 shadow-slate-900/15 hover:bg-slate-800',
+            ? 'bg-gradient-to-r from-primary-600 to-indigo-600 shadow-primary-500/25'
+            : 'bg-slate-900 dark:bg-white shadow-slate-900/15 hover:bg-slate-800 dark:hover:bg-slate-100',
         ].join(' ')}
       >
         {loading ? 'Creating order...' : 'Pay with Razorpay'}
@@ -253,9 +253,9 @@ function PlanCard({ plan, loading, disabled, onPay }) {
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="mt-1 text-lg font-black text-slate-900">{value}</div>
+    <div className="rounded-2xl border border-white/70 dark:border-slate-850 bg-white/70 dark:bg-slate-900/50 p-4 shadow-sm backdrop-blur">
+      <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-1 text-lg font-black text-slate-900 dark:text-white">{value}</div>
     </div>
   )
 }
@@ -263,10 +263,10 @@ function MiniStat({ label, value }) {
 function StatusBox({ tone, children }) {
   const className =
     tone === 'error'
-      ? 'border-rose-200 bg-rose-50 text-rose-700'
+      ? 'border-rose-200 dark:border-rose-900/35 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455'
       : tone === 'success'
-        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-        : 'border-amber-200 bg-amber-50 text-amber-900'
+        ? 'border-emerald-200 dark:border-emerald-900/35 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-808 dark:text-emerald-400'
+        : 'border-amber-200 dark:border-amber-900/35 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-400'
 
   return (
     <div className={`rounded-2xl border p-4 text-sm font-medium ${className}`}>

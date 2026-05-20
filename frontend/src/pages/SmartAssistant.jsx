@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PageShell, SectionCard } from './dashboard/DashboardComponents.jsx'
 import { useAppState } from '../state/appStore.jsx'
 
@@ -188,8 +188,13 @@ function SmartAssistant() {
   const isComplete = answeredCount === copy.questions.length
   const recommendation = useMemo(() => getRecommendation(answers, copy), [answers, copy])
 
+  useEffect(() => {
+    if (!authToken) {
+      window.location.hash = '#/login'
+    }
+  }, [authToken])
+
   if (!authToken) {
-    window.location.hash = '#/login'
     return null
   }
 

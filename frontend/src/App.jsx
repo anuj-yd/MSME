@@ -85,7 +85,7 @@ function App() {
   if (pathname === '/login') page = <LoginPage />
   else if (pathname === '/admin/login') page = <LoginPage mode="admin" />
   else if (pathname === '/register') page = <RegisterPage />
-  else if (pathname === '/verify') page = <VerifyOtpPage email={params.get('email') || ''} />
+  else if (pathname === '/verify') page = <VerifyOtpPage key={params.get('email') || ''} email={params.get('email') || ''} />
   else if (pathname === '/dashboard') page = <UserDashboardPage />
   else if (pathname === '/pricing') page = <PricingPage />
   else if (pathname === '/renewals') page = <RenewalsPage />

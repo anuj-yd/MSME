@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ $appName }} - Document Vault Access</title>
+    <title>MSME - Document Vault Access</title>
   </head>
   <body style="margin:0;padding:0;background:#f6f8fb;font-family:Arial,Helvetica,sans-serif;">
     <div style="max-width:560px;margin:0 auto;padding:24px;">
       <div style="background:#ffffff;border:1px solid #e6eaf0;border-radius:12px;padding:20px;">
         <h2 style="margin:0 0 12px 0;color:#0f172a;">Document vault access</h2>
         <p style="margin:0 0 16px 0;color:#334155;line-height:1.5;">
-          Use this OTP to unlock your document vault on <strong>{{ $appName }}</strong>.
+          Use this OTP to unlock your document vault on <strong>MSME</strong>.
         </p>
 
         <div style="margin:16px 0;padding:14px 16px;border-radius:12px;background:#f1f5f9;border:1px solid #e2e8f0;">

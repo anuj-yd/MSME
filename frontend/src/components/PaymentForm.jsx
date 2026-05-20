@@ -1,6 +1,6 @@
 export function PaymentForm({ value, totalAmount, onChange, disabled = false }) {
   const payment = {
-    mode: 'UPI',
+    mode: 'Razorpay',
     transactionId: '',
     paymentDate: new Date().toISOString().slice(0, 10),
     amountPaid: totalAmount || 0,
@@ -23,22 +23,29 @@ export function PaymentForm({ value, totalAmount, onChange, disabled = false }) 
           onChange={(event) => update({ mode: event.target.value })}
           className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
         >
+          <option>Razorpay</option>
           <option>UPI</option>
           <option>Card</option>
           <option>Net Banking</option>
         </select>
       </label>
 
-      <label className="text-sm font-semibold text-slate-700">
-        Transaction ID / UTR number
-        <input
-          value={payment.transactionId}
-          disabled={disabled}
-          onChange={(event) => update({ transactionId: event.target.value })}
-          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
-          placeholder="Example: UTR123456789"
-        />
-      </label>
+      {payment.mode !== 'Razorpay' ? (
+        <label className="text-sm font-semibold text-slate-700">
+          Transaction ID / UTR number
+          <input
+            value={payment.transactionId}
+            disabled={disabled}
+            onChange={(event) => update({ transactionId: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
+            placeholder="Example: UTR123456789"
+          />
+        </label>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          Razorpay payment will be collected when you submit the application.
+        </div>
+      )}
 
       <label className="text-sm font-semibold text-slate-700">
         Payment date

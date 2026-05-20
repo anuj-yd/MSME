@@ -14,13 +14,17 @@ import {
 } from '../../lib/applicationRecords.js'
 
 function AdminRenewalDetailPage({ id }) {
-  const { adminGetRenewal, adminSetRenewalStatus } = useAppActions()
+  const { adminGetRenewal, adminSetRenewalStatus, adminRequestOtp, adminGetOtp } = useAppActions()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [data, setData] = useState(null)
   const [record, setRecord] = useState(null)
   const [statusLoading, setStatusLoading] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [otpNote, setOtpNote] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [otpStatus, setOtpStatus] = useState('')
+  const [revealedOtp, setRevealedOtp] = useState('')
 
   const renewal = data?.renewal
   const docs = data?.documents || []
@@ -106,12 +110,48 @@ function AdminRenewalDetailPage({ id }) {
     setStatus('rejected', rejectionReason || 'Application rejected by admin.')
   }
 
+  async function requestOtp() {
+    setOtpLoading(true)
+    setOtpStatus('')
+    setRevealedOtp('')
+    try {
+      await adminRequestOtp(id, otpNote)
+      setOtpStatus('requested')
+      setData((current) => current?.renewal ? { ...current, renewal: { ...current.renewal, status: 'otp_required' } } : current)
+      patchRecord({ status: normalizeStatus('otp_required') })
+    } catch (e) {
+      setOtpStatus(e?.response?.data?.message || e.message || 'Failed to request OTP')
+    } finally {
+      setOtpLoading(false)
+    }
+  }
+
+  async function checkOtp() {
+    setOtpLoading(true)
+    setOtpStatus('')
+    try {
+      const res = await adminGetOtp(id)
+      if (res?.otp) {
+        setRevealedOtp(res.otp)
+        setOtpStatus('provided')
+      } else {
+        setRevealedOtp('')
+        setOtpStatus(res?.status || res?.message || 'requested')
+      }
+    } catch (e) {
+      setRevealedOtp('')
+      setOtpStatus(e?.response?.data?.message || e.message || 'OTP is not available yet')
+    } finally {
+      setOtpLoading(false)
+    }
+  }
+
   return (
-    <AdminLayout title="Admin - Application Details">
+    <AdminLayout title="Application Details" subtitle={record?.trackingId || id}>
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">Loading...</div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-slate-300 shadow-sm">Loading...</div>
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">{error}</div>
+        <div className="rounded-2xl border border-rose-900/40 bg-rose-950/20 p-6 text-rose-300">{error}</div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
@@ -125,7 +165,7 @@ function AdminRenewalDetailPage({ id }) {
 
               <div className="mt-5 flex items-center justify-between">
                 <div className="text-sm font-semibold">Current status</div>
-                <Pill tone={record?.status === 'Rejected' || record?.status === 'Payment Pending' ? 'warn' : 'ok'}>
+                <Pill tone={record?.status === 'Rejected' || record?.status === 'Payment Pending' || record?.status === 'OTP Required' ? 'warn' : 'ok'}>
                   {record?.status || '-'}
                 </Pill>
               </div>
@@ -157,12 +197,12 @@ function AdminRenewalDetailPage({ id }) {
               {docs.length ? (
                 <div className="space-y-3">
                   {docs.map((d) => (
-                    <div key={d._id || d.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+                    <div key={d._id || d.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">{d.original_name}</div>
+                        <div className="truncate text-sm font-semibold text-slate-100">{d.original_name}</div>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(d.tags || []).map((t) => (
-                            <span key={t} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                            <span key={t} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
                               {t}
                             </span>
                           ))}
@@ -179,7 +219,7 @@ function AdminRenewalDetailPage({ id }) {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-300">
                   No documents attached or backend document API unavailable.
                 </div>
               )}
@@ -189,11 +229,14 @@ function AdminRenewalDetailPage({ id }) {
           <div className="space-y-6">
             <SectionCard title="Admin actions" description="Move application through required status stages.">
               <div className="grid gap-2">
-                <button type="button" disabled={statusLoading} onClick={() => setStatus('in_review')} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60">
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('in_review')} className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-60">
                   Mark Under Process
                 </button>
                 <button type="button" disabled={statusLoading} onClick={() => setStatus('approved')} className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">
                   Approve
+                </button>
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('filed')} className="rounded-xl bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60">
+                  Mark Filed
                 </button>
                 <button type="button" disabled={statusLoading} onClick={() => setStatus('completed')} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
                   Mark Certificate Ready
@@ -201,13 +244,13 @@ function AdminRenewalDetailPage({ id }) {
               </div>
 
               <div className="mt-5">
-                <label className="text-sm font-semibold text-slate-700">
+                <label className="text-sm font-semibold text-slate-300">
                   Rejection reason
                   <textarea
                     value={rejectionReason}
                     onChange={(event) => setRejectionReason(event.target.value)}
                     rows={3}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500/20"
+                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary-500/20"
                   />
                 </label>
                 <button
@@ -217,6 +260,43 @@ function AdminRenewalDetailPage({ id }) {
                 >
                   Reject Application
                 </button>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="OTP approval" description="Request a user OTP and reveal it once when the user submits it.">
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-300">
+                  Note for OTP request
+                  <textarea
+                    value={otpNote}
+                    onChange={(event) => setOtpNote(event.target.value)}
+                    rows={3}
+                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary-500/20"
+                    placeholder="Example: OTP required for government filing"
+                  />
+                </label>
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-xs text-slate-400">
+                  User link: <span className="font-mono text-slate-200">{`${window.location.origin}${window.location.pathname}#/otp/${id}`}</span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button type="button" disabled={otpLoading} onClick={requestOtp} className="rounded-xl bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60">
+                    Request OTP
+                  </button>
+                  <button type="button" disabled={otpLoading} onClick={checkOtp} className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-60">
+                    Check / Reveal OTP
+                  </button>
+                </div>
+                {otpStatus ? (
+                  <div className="rounded-xl border border-primary-900/40 bg-primary-950/20 px-3 py-2 text-sm text-primary-200">
+                    Status: {otpStatus}
+                  </div>
+                ) : null}
+                {revealedOtp ? (
+                  <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 px-3 py-3">
+                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">OTP revealed once</div>
+                    <div className="mt-1 font-mono text-2xl font-black tracking-widest text-white">{revealedOtp}</div>
+                  </div>
+                ) : null}
               </div>
             </SectionCard>
 
@@ -262,17 +342,17 @@ function buildRecordFromApi(data, id) {
 
 function InfoCard({ label, value, hint }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
       <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-slate-900">{value}</div>
-      {hint ? <div className="mt-0.5 text-xs text-slate-600">{hint}</div> : null}
+      <div className="mt-1 text-sm font-semibold text-slate-100">{value}</div>
+      {hint ? <div className="mt-0.5 text-xs text-slate-400">{hint}</div> : null}
     </div>
   )
 }
 
 function AmountRow({ label, value, strong = false }) {
   return (
-    <div className={`flex items-center justify-between ${strong ? 'border-t border-slate-200 pt-3 font-black' : ''}`}>
+    <div className={`flex items-center justify-between text-slate-300 ${strong ? 'border-t border-slate-800 pt-3 font-black text-white' : ''}`}>
       <span>{label}</span>
       <span>Rs. {value}</span>
     </div>

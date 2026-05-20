@@ -259,7 +259,7 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['otp' => ['Invalid OTP.']]);
         }
 
-        $user->password = $newPassword;
+        $user->password = Hash::make($newPassword);
         $user->password_reset_hash = null;
         $user->password_reset_expires_at = null;
         $user->save();

@@ -14,6 +14,7 @@ class Payment extends Model
         'user_id',
         'provider',
         'purpose',
+        'renewal_id',
         'amount_inr',
         'currency',
         'status',

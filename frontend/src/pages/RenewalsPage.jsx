@@ -52,6 +52,7 @@ function RenewalsPage() {
     try {
       const renewal = await createRenewal(code)
       setOpen(false)
+      // eslint-disable-next-line react-hooks/immutability
       window.location.hash = `#/renewals/${encodeURIComponent(renewal?._id || renewal?.id)}`
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to create renewal')

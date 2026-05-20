@@ -22,6 +22,8 @@ function LoginPage({ mode = 'user' }) {
   const [forgotMessage, setForgotMessage] = useState('')
   const [otp, setOtp] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -88,11 +90,11 @@ function LoginPage({ mode = 'user' }) {
   }
 
   return (
-    <div className="relative min-h-dvh flex items-center justify-center bg-slate-50 overflow-hidden text-slate-900">
+    <div className="relative min-h-dvh flex items-center justify-center bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-white transition-colors duration-300">
       {/* Background Decor */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full bg-primary-300/20 blur-[120px]" />
-        <div className="absolute -right-20 bottom-0 h-[500px] w-[500px] rounded-full bg-indigo-400/15 blur-[120px]" />
+        <div className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full bg-primary-300/20 dark:bg-primary-950/20 blur-[120px]" />
+        <div className="absolute -right-20 bottom-0 h-[500px] w-[500px] rounded-full bg-indigo-400/15 dark:bg-indigo-950/10 blur-[120px]" />
       </div>
 
       <div className="relative mx-auto w-full max-w-[440px] px-6 py-12 z-10">
@@ -104,23 +106,23 @@ function LoginPage({ mode = 'user' }) {
           </a>
         </div>
 
-        <div className="rounded-[2rem] border border-white/60 bg-white/70 p-8 shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:p-10">
+        <div className="rounded-[2rem] border border-white/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 p-8 shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:p-10 transition-all duration-300 hover:border-slate-200 dark:hover:border-slate-700">
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Welcome back</h1>
+            <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
               {isAdmin ? 'Sign in to the admin console.' : 'Sign in to your MSE account to continue.'}
             </p>
           </div>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-slate-705 dark:text-slate-300 mb-2">
                 Email Address
               </label>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm outline-none transition-all focus:border-primary-500 focus:bg-white focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-400"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition-all focus:border-primary-500 dark:focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-400 dark:placeholder:text-slate-650"
                 type="email"
                 autoComplete="email"
                 placeholder="name@company.com"
@@ -129,73 +131,97 @@ function LoginPage({ mode = 'user' }) {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-slate-705 dark:text-slate-300 mb-2">
                 Password
               </label>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm outline-none transition-all focus:border-primary-500 focus:bg-white focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-400"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Password"
-                required
-              />
+              <div className="relative">
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white outline-none transition-all focus:border-primary-500 dark:focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-400 dark:placeholder:text-slate-650"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="Password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-3 flex items-center rounded-full px-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+              <div className="rounded-xl border border-rose-200 dark:border-rose-900/35 bg-rose-50 dark:bg-rose-950/20 px-4 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400">
                 {error}
               </div>
             ) : null}
 
             {!forgotMode ? (
               <div className="text-right">
-                <button type="button" onClick={() => setForgotMode(true)} className="text-sm font-semibold text-primary-600 hover:underline">
+                <button type="button" onClick={() => setForgotMode(true)} className="text-sm font-bold text-primary-600 dark:text-primary-405 hover:underline">
                   Forgot password?
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
                 {forgotError ? (
-                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+                  <div className="rounded-xl border border-rose-200 dark:border-rose-900/35 bg-rose-50 dark:bg-rose-950/20 px-4 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400">
                     {forgotError}
                   </div>
                 ) : null}
                 {forgotMessage ? (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/35 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                     {forgotMessage}
                   </div>
                 ) : null}
 
                 {resetStage === 0 ? (
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={sendResetOtp} disabled={forgotLoading || !email.trim()} className="mt-2 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60">
+                    <button type="button" onClick={sendResetOtp} disabled={forgotLoading || !email.trim()} className="mt-2 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-805 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-805 disabled:opacity-60 transition-colors">
                       {forgotLoading ? 'Sending...' : 'Send reset OTP'}
                     </button>
-                    <button type="button" onClick={() => setForgotMode(false)} className="mt-2 inline-flex items-center justify-center rounded-xl bg-white/30 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-white">
+                    <button type="button" onClick={() => setForgotMode(false)} className="mt-2 inline-flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                       Cancel
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={submitReset} className="space-y-3">
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">OTP</label>
-                      <input value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm" placeholder="1234" />
+                      <label className="block text-sm font-bold text-slate-705 dark:text-slate-300 mb-2">OTP</label>
+                      <input value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500" placeholder="1234" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">New password</label>
-                      <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm" placeholder="New password" />
+                      <label className="block text-sm font-bold text-slate-705 dark:text-slate-300 mb-2">New password</label>
+                      <div className="relative">
+                        <input
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          type={showNewPassword ? 'text' : 'password'}
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
+                          placeholder="New password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword((prev) => !prev)}
+                          className="absolute inset-y-0 right-3 flex items-center rounded-full px-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        >
+                          {showNewPassword ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button type="submit" disabled={forgotLoading || !otp || !newPassword} className="mt-2 inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
+                      <button type="button" onClick={submitReset} disabled={forgotLoading || !otp || !newPassword} className="mt-2 inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60 transition-colors">
                         {forgotLoading ? 'Saving...' : 'Reset password'}
                       </button>
-                      <button type="button" onClick={() => { setResetStage(0); setOtp(''); setNewPassword('') }} className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                      <button type="button" onClick={() => { setResetStage(0); setOtp(''); setNewPassword('') }} className="mt-2 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-805 transition-colors">
                         Back
                       </button>
                     </div>
-                  </form>
+                  </div>
                 )}
               </div>
             )}
@@ -203,7 +229,7 @@ function LoginPage({ mode = 'user' }) {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-primary-500/20 transition-all hover:shadow-lg hover:shadow-primary-500/40 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-primary-500/20 transition-all duration-300 hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -220,16 +246,16 @@ function LoginPage({ mode = 'user' }) {
           </form>
 
           {isAdmin ? (
-            <p className="mt-8 text-center text-sm text-slate-500">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Need the user area?{' '}
-              <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/login">
+              <a className="font-semibold text-primary-600 dark:text-primary-400 transition-colors hover:text-primary-700 hover:underline" href="#/login">
                 User login
               </a>
             </p>
           ) : (
-            <p className="mt-8 text-center text-sm text-slate-500">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Don't have an account?{' '}
-              <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/register">
+              <a className="font-semibold text-primary-600 dark:text-primary-400 transition-colors hover:text-primary-700 hover:underline" href="#/register">
                 Create an account
               </a>
             </p>
@@ -237,7 +263,7 @@ function LoginPage({ mode = 'user' }) {
         </div>
         
         <div className="mt-8 text-center">
-          <a className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-800" href="#/">
+          <a className="text-sm font-semibold text-slate-500 dark:text-slate-400 transition-colors hover:text-slate-800 dark:hover:text-slate-200" href="#/">
             Back to home
           </a>
         </div>
