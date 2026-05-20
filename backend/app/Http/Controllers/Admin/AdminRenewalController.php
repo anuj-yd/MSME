@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Payment;
 use App\Models\RenewalApplication;
 use App\Models\RenewalType;
 use App\Models\User;
@@ -74,7 +75,7 @@ class AdminRenewalController extends Controller
     public function setStatus(Request $request, string $id)
     {
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:submitted,in_review,approved,otp_required,filed,completed,rejected'],
+            'status' => ['required', 'string', 'in:submitted,payment_verified,in_review,approved,otp_required,filed,completed,rejected'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -93,6 +94,80 @@ class AdminRenewalController extends Controller
             $app->fields = $fields;
         }
         $app->save();
+
+        return response()->json(['renewal' => $app]);
+    }
+
+    public function payments(Request $request)
+    {
+        $payments = Payment::query()
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get()
+            ->values();
+
+        $userIds = $payments->pluck('user_id')->unique()->values();
+        $users = User::query()->whereIn('_id', $userIds)->get()->keyBy(fn ($u) => (string) $u->getKey());
+
+        $renewalIds = $payments->pluck('renewal_id')->filter()->unique()->values();
+        $renewals = RenewalApplication::query()->whereIn('_id', $renewalIds)->get()->keyBy(fn ($r) => (string) $r->getKey());
+
+        $mapped = $payments->map(function ($payment) use ($users, $renewals) {
+            $user = $users[(string) $payment->user_id] ?? null;
+            $renewal = $payment->renewal_id ? ($renewals[(string) $payment->renewal_id] ?? null) : null;
+            $fields = (array) ($renewal?->fields ?? []);
+
+            return [
+                'id' => (string) $payment->getKey(),
+                'user_id' => (string) ($payment->user_id ?? ''),
+                'purpose' => (string) ($payment->purpose ?? ''),
+                'renewal_id' => $payment->renewal_id ? (string) $payment->renewal_id : null,
+                'amount_inr' => $payment->amount_inr,
+                'currency' => (string) ($payment->currency ?? 'INR'),
+                'status' => (string) ($payment->status ?? ''),
+                'provider' => (string) ($payment->provider ?? ''),
+                'razorpay_order_id' => $payment->razorpay_order_id,
+                'razorpay_payment_id' => $payment->razorpay_payment_id,
+                'created_at' => $payment->created_at,
+                'updated_at' => $payment->updated_at,
+                'user' => $user ? [
+                    'id' => (string) $user->getKey(),
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ] : null,
+                'renewal' => $renewal ? [
+                    'id' => (string) $renewal->getKey(),
+                    'status' => (string) ($renewal->status ?? ''),
+                    'tracking_id' => $fields['tracking_id'] ?? null,
+                    'renewal_type_code' => (string) ($renewal->renewal_type_code ?? ''),
+                    'payment_status' => $fields['payment_details']['paymentStatus'] ?? null,
+                ] : null,
+            ];
+        })->values();
+
+        return response()->json(['payments' => $mapped]);
+    }
+
+    public function verifyPayment(Request $request, string $id)
+    {
+        $app = RenewalApplication::query()->where('_id', $id)->first();
+        if (! $app) return response()->json(['message' => 'Not found.'], 404);
+
+        $fields = (array) ($app->fields ?? []);
+        $paymentDetails = (array) ($fields['payment_details'] ?? []);
+        $paymentDetails['mode'] = $paymentDetails['mode'] ?? 'Razorpay';
+        $paymentDetails['paymentStatus'] = 'Verified';
+        $paymentDetails['verifiedAt'] = now()->toISOString();
+        $fields['payment_details'] = $paymentDetails;
+
+        $app->fields = $fields;
+        $app->status = 'payment_verified';
+        $app->save();
+
+        Payment::query()
+            ->where('renewal_id', (string) $app->getKey())
+            ->where('status', 'paid')
+            ->update(['status' => 'verified']);
 
         return response()->json(['renewal' => $app]);
     }

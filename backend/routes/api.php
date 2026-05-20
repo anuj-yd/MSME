@@ -67,8 +67,10 @@ Route::prefix('admin')->middleware([ApiTokenAuth::class, EnsureAdmin::class])->g
     Route::patch('/users/{id}/role', [AdminUserController::class, 'updateRole']);
 
     Route::get('/renewals', [AdminRenewalController::class, 'index']);
+    Route::get('/payments', [AdminRenewalController::class, 'payments']);
     Route::get('/renewals/{id}', [AdminRenewalController::class, 'show']);
     Route::post('/renewals/{id}/status', [AdminRenewalController::class, 'setStatus']);
+    Route::post('/renewals/{id}/payment/verify', [AdminRenewalController::class, 'verifyPayment']);
     Route::post('/renewals/{id}/otp/request', [OtpApprovalController::class, 'requestOtp']);
     Route::get('/renewals/{id}/otp', [OtpApprovalController::class, 'adminGetOtp']);
 });

@@ -15,6 +15,7 @@ import {
   validatePaymentDetails,
 } from '../lib/applicationRecords.js'
 import { loadRazorpayCheckout } from '../lib/razorpay.js'
+import { subscribeToApplicationUpdates } from '../lib/realtime.js'
 
 const FORM_STEPS = [
   { id: 'basic', title: 'Basic Details' },
@@ -121,6 +122,40 @@ function RenewalDetailPage({ id }) {
       mounted = false
     }
   }, [getRenewal, id, draftKey, user])
+
+  useEffect(() => {
+    if (!renewal || renewal.status === 'draft') return undefined
+
+    const unsubscribe = subscribeToApplicationUpdates(async () => {
+      try {
+        const res = await getRenewal(id)
+        const latest = res?.renewal
+        if (!latest) return
+        setRenewal(latest)
+        const fieldsFromApi = latest.fields || {}
+        const latestStatus = normalizeStatus(latest.status)
+        setApplicationRecord((current) => saveApplicationRecord({
+          ...(current || {}),
+          id: latest._id || latest.id || id,
+          renewalTypeCode: latest.renewal_type_code || current?.renewalTypeCode || '',
+          renewalTypeName: res?.type?.name || type?.name || current?.renewalTypeName || latest.renewal_type_code || '',
+          businessName: fieldsFromApi.business_name || fieldsFromApi.enterprise_name || current?.businessName || '',
+          registrationNumber: fieldsFromApi.registration_no || fieldsFromApi.udyam_no || current?.registrationNumber || '',
+          paymentDetails: fieldsFromApi.payment_details || current?.paymentDetails,
+          status: latestStatus,
+          certificateStatus: latestStatus === 'Certificate Ready' ? 'Ready' : current?.certificateStatus || 'Not Ready',
+          trackingId: fieldsFromApi.tracking_id || current?.trackingId,
+          submittedAt: latest.submitted_at || current?.submittedAt,
+        }))
+      } catch {
+        // Keep the currently visible status if a background refresh fails.
+      }
+    })
+
+    return () => {
+      try { unsubscribe() } catch (e) {}
+    }
+  }, [renewal, getRenewal, id, type])
 
   const requiredTags = useMemo(() => (type?.required_document_tags || []).filter(Boolean), [type])
   const schemaItems = useMemo(() => (Array.isArray(type?.fields_schema) ? type.fields_schema : []), [type])
@@ -838,7 +873,7 @@ function ReviewStep({
           </div>
         ) : (
           <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-            Payment details ready. Submit will move this application to Payment Pending.
+            Payment details ready. Submit will send this application to admin for payment verification.
           </div>
         )}
       </div>

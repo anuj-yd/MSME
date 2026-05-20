@@ -5,15 +5,19 @@ export function ApplicationTracker({ record }) {
   const currentIndex = Math.max(0, APPLICATION_STATUSES.indexOf(record?.status || 'Draft'))
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Tracking ID</div>
-          <div className="mt-1 font-mono text-lg font-black text-slate-900">{record?.trackingId || 'Not generated'}</div>
+          <div className="mt-1 break-all font-mono text-base font-black leading-tight text-slate-900 sm:text-lg">
+            {record?.trackingId || 'Not generated'}
+          </div>
         </div>
-        <Pill tone={record?.status === 'Rejected' ? 'warn' : record?.status === 'Certificate Ready' ? 'ok' : 'info'}>
-          {record?.status || 'Draft'}
-        </Pill>
+        <div className="shrink-0 self-start">
+          <Pill tone={record?.status === 'Rejected' ? 'warn' : record?.status === 'Certificate Ready' ? 'ok' : 'info'}>
+            {record?.status || 'Draft'}
+          </Pill>
+        </div>
       </div>
 
       <div className="mt-5 h-2 rounded-full bg-slate-100">
@@ -23,14 +27,14 @@ export function ApplicationTracker({ record }) {
         />
       </div>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-2">
         {APPLICATION_STATUSES.map((status, index) => {
           const done = index <= currentIndex
           return (
             <div
               key={status}
               className={[
-                'rounded-xl border px-3 py-2 text-xs font-bold',
+                'min-h-12 rounded-xl border px-3 py-2 text-center text-xs font-bold leading-snug break-words',
                 done ? 'border-primary-100 bg-primary-50 text-primary-800' : 'border-slate-200 bg-slate-50 text-slate-500',
               ].join(' ')}
             >

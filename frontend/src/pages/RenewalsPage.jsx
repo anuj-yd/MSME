@@ -3,6 +3,7 @@ import { PageShell, SectionCard, StatCard } from './dashboard/DashboardComponent
 import { useAppActions, useAppState } from '../state/appStore.jsx'
 import { EmptyState, Modal, Pill } from './renewals/RenewalComponents.jsx'
 import { normalizeStatus } from '../lib/applicationRecords.js'
+import { subscribeToApplicationUpdates } from '../lib/realtime.js'
 
 function RenewalsPage() {
   const { renewals, renewalTypes, loading, errors } = useAppState()
@@ -17,12 +18,22 @@ function RenewalsPage() {
     refreshRenewals()
   }, [refreshRenewals])
 
+  useEffect(() => {
+    const unsubscribe = subscribeToApplicationUpdates(() => {
+      refreshRenewals().catch(() => {})
+    })
+    return () => {
+      try { unsubscribe() } catch (e) {}
+    }
+  }, [refreshRenewals])
+
   const stats = useMemo(() => {
     const list = Array.isArray(renewals) ? renewals : []
     return {
       total: list.length,
       drafts: list.filter((r) => r.status === 'draft').length,
       submitted: list.filter((r) => r.status === 'submitted').length,
+      verified: list.filter((r) => r.status === 'payment_verified').length,
     }
   }, [renewals])
 
@@ -82,10 +93,11 @@ function RenewalsPage() {
         </div>
       }
     >
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard label="Total" value={`${stats.total}`} hint="All applications" tone="primary" />
         <StatCard label="Drafts" value={`${stats.drafts}`} hint="Not submitted yet" />
         <StatCard label="Submitted" value={`${stats.submitted}`} hint="Sent for processing" />
+        <StatCard label="Payment Verified" value={`${stats.verified}`} hint="Admin verified payments" />
       </div>
 
       <div className="mt-6">

@@ -14,17 +14,13 @@ import {
 } from '../../lib/applicationRecords.js'
 
 function AdminRenewalDetailPage({ id }) {
-  const { adminGetRenewal, adminSetRenewalStatus, adminRequestOtp, adminGetOtp } = useAppActions()
+  const { adminGetRenewal, adminSetRenewalStatus, adminVerifyRenewalPayment } = useAppActions()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [data, setData] = useState(null)
   const [record, setRecord] = useState(null)
   const [statusLoading, setStatusLoading] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
-  const [otpNote, setOtpNote] = useState('')
-  const [otpLoading, setOtpLoading] = useState(false)
-  const [otpStatus, setOtpStatus] = useState('')
-  const [revealedOtp, setRevealedOtp] = useState('')
 
   const renewal = data?.renewal
   const docs = data?.documents || []
@@ -96,54 +92,30 @@ function AdminRenewalDetailPage({ id }) {
     }
   }
 
-  function verifyPayment() {
-    patchRecord({
-      paymentDetails: {
-        ...record?.paymentDetails,
-        paymentStatus: 'Verified',
-      },
-      status: record?.status === 'Payment Pending' ? 'Under Review' : record?.status,
-    })
+  async function verifyPayment() {
+    setStatusLoading(true)
+    try {
+      const updated = await adminVerifyRenewalPayment(id)
+      if (updated) {
+        setData((current) => ({ ...(current || {}), renewal: updated }))
+      }
+      patchRecord({
+        paymentDetails: {
+          ...record?.paymentDetails,
+          ...(updated?.fields?.payment_details || {}),
+          paymentStatus: 'Verified',
+        },
+        status: normalizeStatus(updated?.status || 'payment_verified'),
+      })
+    } catch (e) {
+      alert(e?.response?.data?.message || 'Failed to verify payment')
+    } finally {
+      setStatusLoading(false)
+    }
   }
 
   function rejectApplication() {
     setStatus('rejected', rejectionReason || 'Application rejected by admin.')
-  }
-
-  async function requestOtp() {
-    setOtpLoading(true)
-    setOtpStatus('')
-    setRevealedOtp('')
-    try {
-      await adminRequestOtp(id, otpNote)
-      setOtpStatus('requested')
-      setData((current) => current?.renewal ? { ...current, renewal: { ...current.renewal, status: 'otp_required' } } : current)
-      patchRecord({ status: normalizeStatus('otp_required') })
-    } catch (e) {
-      setOtpStatus(e?.response?.data?.message || e.message || 'Failed to request OTP')
-    } finally {
-      setOtpLoading(false)
-    }
-  }
-
-  async function checkOtp() {
-    setOtpLoading(true)
-    setOtpStatus('')
-    try {
-      const res = await adminGetOtp(id)
-      if (res?.otp) {
-        setRevealedOtp(res.otp)
-        setOtpStatus('provided')
-      } else {
-        setRevealedOtp('')
-        setOtpStatus(res?.status || res?.message || 'requested')
-      }
-    } catch (e) {
-      setRevealedOtp('')
-      setOtpStatus(e?.response?.data?.message || e.message || 'OTP is not available yet')
-    } finally {
-      setOtpLoading(false)
-    }
   }
 
   return (
@@ -165,7 +137,7 @@ function AdminRenewalDetailPage({ id }) {
 
               <div className="mt-5 flex items-center justify-between">
                 <div className="text-sm font-semibold">Current status</div>
-                <Pill tone={record?.status === 'Rejected' || record?.status === 'Payment Pending' || record?.status === 'OTP Required' ? 'warn' : 'ok'}>
+                <Pill tone={record?.status === 'Rejected' || record?.status === 'OTP Required' ? 'warn' : 'ok'}>
                   {record?.status || '-'}
                 </Pill>
               </div>
@@ -187,9 +159,10 @@ function AdminRenewalDetailPage({ id }) {
               <button
                 type="button"
                 onClick={verifyPayment}
-                className="mt-4 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                disabled={statusLoading || record?.paymentDetails?.paymentStatus === 'Verified'}
+                className="mt-4 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Verify Payment
+                {record?.paymentDetails?.paymentStatus === 'Verified' ? 'Payment Verified' : 'Verify Payment'}
               </button>
             </SectionCard>
 
@@ -232,6 +205,9 @@ function AdminRenewalDetailPage({ id }) {
                 <button type="button" disabled={statusLoading} onClick={() => setStatus('in_review')} className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-60">
                   Mark Under Process
                 </button>
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('payment_verified')} className="rounded-xl border border-emerald-900/40 bg-emerald-950/30 px-3 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-950/50 disabled:opacity-60">
+                  Mark Payment Verified
+                </button>
                 <button type="button" disabled={statusLoading} onClick={() => setStatus('approved')} className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">
                   Approve
                 </button>
@@ -260,43 +236,6 @@ function AdminRenewalDetailPage({ id }) {
                 >
                   Reject Application
                 </button>
-              </div>
-            </SectionCard>
-
-            <SectionCard title="OTP approval" description="Request a user OTP and reveal it once when the user submits it.">
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-300">
-                  Note for OTP request
-                  <textarea
-                    value={otpNote}
-                    onChange={(event) => setOtpNote(event.target.value)}
-                    rows={3}
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary-500/20"
-                    placeholder="Example: OTP required for government filing"
-                  />
-                </label>
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-xs text-slate-400">
-                  User link: <span className="font-mono text-slate-200">{`${window.location.origin}${window.location.pathname}#/otp/${id}`}</span>
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <button type="button" disabled={otpLoading} onClick={requestOtp} className="rounded-xl bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60">
-                    Request OTP
-                  </button>
-                  <button type="button" disabled={otpLoading} onClick={checkOtp} className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-60">
-                    Check / Reveal OTP
-                  </button>
-                </div>
-                {otpStatus ? (
-                  <div className="rounded-xl border border-primary-900/40 bg-primary-950/20 px-3 py-2 text-sm text-primary-200">
-                    Status: {otpStatus}
-                  </div>
-                ) : null}
-                {revealedOtp ? (
-                  <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 px-3 py-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">OTP revealed once</div>
-                    <div className="mt-1 font-mono text-2xl font-black tracking-widest text-white">{revealedOtp}</div>
-                  </div>
-                ) : null}
               </div>
             </SectionCard>
 

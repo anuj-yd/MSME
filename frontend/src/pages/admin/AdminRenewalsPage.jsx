@@ -41,6 +41,7 @@ function AdminRenewalsPage() {
   const counts = useMemo(() => ({
     total: items.length,
     submitted: items.filter((item) => item.status === 'submitted').length,
+    paymentVerified: items.filter((item) => item.status === 'payment_verified').length,
     otp: items.filter((item) => item.status === 'otp_required').length,
     approved: items.filter((item) => item.status === 'approved' || item.status === 'completed').length,
     review: items.filter((item) => item.status === 'in_review').length,
@@ -49,9 +50,10 @@ function AdminRenewalsPage() {
 
   return (
     <AdminLayout title="Applications" subtitle="Review applications, request OTPs, approve filings, and issue certificates">
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <StatCard label="Total" value={`${counts.total}`} hint="Loaded list" tone="primary" />
         <StatCard label="Submitted" value={`${counts.submitted}`} hint="Ready to review" />
+        <StatCard label="Payment Verified" value={`${counts.paymentVerified}`} hint="Admin checked" />
         <StatCard label="OTP Required" value={`${counts.otp}`} hint="Waiting on user" tone="warn" />
         <StatCard label="In review" value={`${counts.review}`} hint="Being processed" />
         <StatCard label="Approved" value={`${counts.approved}`} hint="Approved or complete" />
@@ -70,6 +72,7 @@ function AdminRenewalsPage() {
             >
               <option value="all">All</option>
               <option value="submitted">Submitted</option>
+              <option value="payment_verified">Payment Verified</option>
               <option value="otp_required">OTP Required</option>
               <option value="in_review">Under Process</option>
               <option value="approved">Approved</option>

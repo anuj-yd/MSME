@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entitlement;
 use App\Models\Payment;
+use App\Models\RenewalApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -143,6 +144,33 @@ class BillingController extends Controller
         $payment->status = 'paid';
         $payment->save();
 
+        if ($payment->purpose === 'renewal_fee') {
+            if ($payment->renewal_id) {
+                $renewal = RenewalApplication::query()
+                    ->where('_id', (string) $payment->renewal_id)
+                    ->where('user_id', (string) $user->getKey())
+                    ->first();
+
+                if ($renewal) {
+                    $fields = (array) ($renewal->fields ?? []);
+                    $paymentDetails = (array) ($fields['payment_details'] ?? []);
+                    $paymentDetails['mode'] = 'Razorpay';
+                    $paymentDetails['transactionId'] = $payment->razorpay_payment_id;
+                    $paymentDetails['amountPaid'] = $payment->amount_inr;
+                    $paymentDetails['paymentStatus'] = 'Paid';
+                    $paymentDetails['paymentDate'] = now()->toDateString();
+                    $fields['payment_details'] = $paymentDetails;
+                    $renewal->fields = $fields;
+                    $renewal->save();
+                }
+            }
+
+            return response()->json([
+                'message' => 'Payment received. Awaiting admin verification.',
+                'payment' => $payment,
+            ]);
+        }
+
         $months = $payment->purpose === 'premium_yearly' ? 12 : 1;
 
         $ent = Entitlement::query()->firstOrNew(['user_id' => (string) $user->getKey()]);
@@ -159,4 +187,3 @@ class BillingController extends Controller
         ]);
     }
 }
-

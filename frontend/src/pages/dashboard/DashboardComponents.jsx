@@ -63,7 +63,7 @@ export function StatCard({ label, value, hint, tone = 'default' }) {
 
 export function SectionCard({ title, description, actions, children }) {
   return (
-    <section className="rounded-[2rem] border border-white/40 bg-white/70 dark:border-slate-800/80 dark:bg-slate-900/70 p-8 shadow-md shadow-slate-900/5 backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-slate-900/10 hover:border-white/60 dark:hover:border-slate-800">
+    <section className="rounded-[2rem] border border-white/40 bg-white/70 dark:border-slate-800/80 dark:bg-slate-900/70 p-5 sm:p-6 shadow-md shadow-slate-900/5 backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-slate-900/10 hover:border-white/60 dark:hover:border-slate-800">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{title}</h2>

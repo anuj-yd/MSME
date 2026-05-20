@@ -4,6 +4,7 @@ import { ApplicationTracker } from '../components/ApplicationTracker.jsx'
 import { CertificateDownload } from '../components/CertificateDownload.jsx'
 import { calculateFeeDetails, defaultPaymentDetails, findApplicationByTrackingId, normalizeStatus } from '../lib/applicationRecords.js'
 import { useAppActions, useAppState } from '../state/appStore.jsx'
+import { subscribeToApplicationUpdates } from '../lib/realtime.js'
 
 function TrackApplicationPage({ initialTrackingId = '' }) {
   const { renewals, renewalTypes } = useAppState()
@@ -16,6 +17,16 @@ function TrackApplicationPage({ initialTrackingId = '' }) {
     refreshRenewals().catch(() => {})
     fetchRenewalTypes().catch(() => {})
   }, [searched, refreshRenewals, fetchRenewalTypes])
+
+  useEffect(() => {
+    if (!searched) return undefined
+    const unsubscribe = subscribeToApplicationUpdates(() => {
+      refreshRenewals().catch(() => {})
+    })
+    return () => {
+      try { unsubscribe() } catch (e) {}
+    }
+  }, [searched, refreshRenewals])
 
   const record = useMemo(
     () => {

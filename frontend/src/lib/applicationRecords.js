@@ -3,7 +3,7 @@ const STORAGE_KEY = 'msme_application_records'
 export const APPLICATION_STATUSES = [
   'Draft',
   'Submitted',
-  'Payment Pending',
+  'Payment Verified',
   'Under Review',
   'Approved',
   'Rejected',
@@ -28,7 +28,7 @@ export function normalizeStatus(status) {
   const raw = String(status || '').toLowerCase()
   if (raw === 'draft') return 'Draft'
   if (raw === 'submitted') return 'Submitted'
-  if (raw === 'payment_pending') return 'Payment Pending'
+  if (raw === 'payment_pending' || raw === 'payment_verified') return 'Payment Verified'
   if (raw === 'in_review') return 'Under Review'
   if (raw === 'approved') return 'Approved'
   if (raw === 'rejected') return 'Rejected'

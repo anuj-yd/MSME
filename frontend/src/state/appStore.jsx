@@ -283,6 +283,16 @@ export function AppStoreProvider({ children }) {
       return res?.data?.renewal
     }
 
+    async function adminVerifyRenewalPayment(id) {
+      const res = await api.post(`/admin/renewals/${id}/payment/verify`)
+      return res?.data?.renewal
+    }
+
+    async function adminListPayments() {
+      const res = await api.get('/admin/payments')
+      return res?.data?.payments || []
+    }
+
     async function adminRequestOtp(id, note = '') {
       const res = await api.post(`/admin/renewals/${id}/otp/request`, { note })
       return res?.data?.otp_request
@@ -351,6 +361,8 @@ export function AppStoreProvider({ children }) {
       adminListRenewals,
       adminGetRenewal,
       adminSetRenewalStatus,
+      adminVerifyRenewalPayment,
+      adminListPayments,
       adminRequestOtp,
       adminGetOtp,
       adminGetStats,

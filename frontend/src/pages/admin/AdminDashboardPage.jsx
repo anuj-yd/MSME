@@ -7,6 +7,7 @@ import { normalizeStatus } from '../../lib/applicationRecords.js'
 const STATUS_ORDER = [
   'draft',
   'submitted',
+  'payment_verified',
   'otp_required',
   'in_review',
   'approved',

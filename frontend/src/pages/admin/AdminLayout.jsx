@@ -25,6 +25,12 @@ export function AdminLayout({ title, subtitle, right, children }) {
       >
         Users
       </a>
+      <a
+        href="#/admin/payments"
+        className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+      >
+        Payments
+      </a>
       <div className="w-px h-5 bg-slate-300 mx-2"></div>
       <a
         href="#/"

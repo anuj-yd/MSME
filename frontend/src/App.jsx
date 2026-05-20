@@ -14,6 +14,7 @@ import AdminRenewalsPage from './pages/admin/AdminRenewalsPage.jsx'
 import AdminRenewalDetailPage from './pages/admin/AdminRenewalDetailPage.jsx'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx'
 import { AdminAuthGate } from './pages/admin/AdminAuthGate.jsx'
 import OtpApprovalPage from './pages/OtpApprovalPage.jsx'
 import { useEffect, useState } from 'react'
@@ -98,6 +99,7 @@ function App() {
   }
   else if (pathname === '/admin' || pathname === '/admin/dashboard') page = <AdminAuthGate><AdminDashboardPage /></AdminAuthGate>
   else if (pathname === '/admin/users') page = <AdminAuthGate><AdminUsersPage /></AdminAuthGate>
+  else if (pathname === '/admin/payments') page = <AdminAuthGate><AdminPaymentsPage /></AdminAuthGate>
   else if (pathname === '/admin/renewals') page = <AdminAuthGate><AdminRenewalsPage /></AdminAuthGate>
   else if (pathname.startsWith('/admin/renewals/')) {
     const id = decodeURIComponent(pathname.replace('/admin/renewals/', ''))
