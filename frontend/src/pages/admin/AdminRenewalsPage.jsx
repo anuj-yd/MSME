@@ -3,13 +3,12 @@ import { SectionCard, StatCard } from '../dashboard/DashboardComponents.jsx'
 import { AdminLayout } from './AdminLayout.jsx'
 import { useAppActions } from '../../state/appStore.jsx'
 import { Pill } from '../renewals/RenewalComponents.jsx'
-import { readApplicationRecords } from '../../lib/applicationRecords.js'
+import { normalizeStatus } from '../../lib/applicationRecords.js'
 
 function AdminRenewalsPage() {
   const { adminListRenewals } = useAppActions()
-  const [status, setStatus] = useState('all')
+  const [status, setStatus] = useState('submitted')
   const [apiItems, setApiItems] = useState([])
-  const [localItems, setLocalItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -33,36 +32,28 @@ function AdminRenewalsPage() {
     }
   }, [adminListRenewals])
 
-  useEffect(() => {
-    function syncLocalItems() {
-      setLocalItems(readApplicationRecords())
-    }
-
-    syncLocalItems()
-    window.addEventListener('application-records-change', syncLocalItems)
-    return () => window.removeEventListener('application-records-change', syncLocalItems)
-  }, [])
-
-  const items = localItems.length ? localItems : apiItems
+  const items = apiItems
   const visibleItems = useMemo(
-    () => status === 'all' ? items : items.filter((item) => item.status === status || item.status?.toLowerCase?.() === status),
+    () => status === 'all' ? items : items.filter((item) => item.status === status),
     [items, status],
   )
 
   const counts = useMemo(() => ({
     total: items.length,
-    submitted: items.filter((item) => item.status === 'Submitted' || item.status === 'submitted').length,
-    payment: items.filter((item) => item.status === 'Payment Pending').length,
-    review: items.filter((item) => item.status === 'Under Review' || item.status === 'in_review').length,
+    submitted: items.filter((item) => item.status === 'submitted').length,
+    approved: items.filter((item) => item.status === 'approved' || item.status === 'completed').length,
+    review: items.filter((item) => item.status === 'in_review').length,
+    rejected: items.filter((item) => item.status === 'rejected').length,
   }), [items])
 
   return (
     <AdminLayout title="Admin - Applications">
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <StatCard label="Total" value={`${counts.total}`} hint="Loaded list" tone="primary" />
         <StatCard label="Submitted" value={`${counts.submitted}`} hint="Ready to review" />
-        <StatCard label="Payment pending" value={`${counts.payment}`} hint="Waiting verification" tone="warn" />
         <StatCard label="In review" value={`${counts.review}`} hint="Being processed" />
+        <StatCard label="Approved" value={`${counts.approved}`} hint="Approved or complete" />
+        <StatCard label="Rejected" value={`${counts.rejected}`} hint="Sent back to user" tone="warn" />
       </div>
 
       <div className="mt-6">
@@ -76,12 +67,11 @@ function AdminRenewalsPage() {
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
             >
               <option value="all">All</option>
-              <option value="Submitted">Submitted</option>
-              <option value="Payment Pending">Payment Pending</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Certificate Ready">Certificate Ready</option>
+              <option value="submitted">Submitted</option>
+              <option value="in_review">Under Process</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="completed">Certificate Ready</option>
             </select>
           }
         >
@@ -91,7 +81,7 @@ function AdminRenewalsPage() {
             </div>
           ) : null}
 
-          {loading && !localItems.length ? (
+          {loading ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
               Loading...
             </div>
@@ -111,16 +101,16 @@ function AdminRenewalsPage() {
                     className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-slate-50"
                   >
                     <div className="col-span-4 min-w-0">
-                      <div className="truncate text-sm font-semibold">{r.businessName || r.user?.name || '-'}</div>
-                      <div className="mt-0.5 truncate text-xs text-slate-600">{r.trackingId || r.user?.email || '-'}</div>
+                      <div className="truncate text-sm font-semibold">{r.user?.name || '-'}</div>
+                      <div className="mt-0.5 truncate text-xs text-slate-600">{r.user?.email || '-'}</div>
                     </div>
                     <div className="col-span-4 min-w-0">
-                      <div className="truncate text-sm font-semibold">{r.renewalTypeName || r.renewal_type_name}</div>
-                      <div className="mt-0.5 truncate text-xs text-slate-600">{r.registrationNumber || r.renewal_type_code}</div>
+                      <div className="truncate text-sm font-semibold">{r.renewal_type_name}</div>
+                      <div className="mt-0.5 truncate text-xs text-slate-600">{r.renewal_type_code}</div>
                     </div>
                     <div className="col-span-2 flex items-center">
-                      <Pill tone={r.status === 'Rejected' || r.status === 'Payment Pending' ? 'warn' : r.status === 'Certificate Ready' ? 'ok' : 'info'}>
-                        {r.status}
+                      <Pill tone={r.status === 'rejected' ? 'warn' : r.status === 'approved' || r.status === 'completed' ? 'ok' : 'info'}>
+                        {normalizeStatus(r.status)}
                       </Pill>
                     </div>
                     <div className="col-span-2 flex items-center justify-end text-xs text-slate-600">

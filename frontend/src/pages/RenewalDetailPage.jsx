@@ -10,6 +10,7 @@ import {
   calculateFeeDetails,
   defaultPaymentDetails,
   ensureApplicationRecord,
+  normalizeStatus,
   saveApplicationRecord,
   validatePaymentDetails,
 } from '../lib/applicationRecords.js'
@@ -237,8 +238,16 @@ function RenewalDetailPage({ id }) {
 
   async function persistDraft() {
     if (!renewal) return
+    const calculatedFeeDetails = calculateFeeDetails({
+      ...feeDetails,
+      licenseType: feeDetails.licenseType || type?.name || renewal.renewal_type_code,
+    })
     const updated = await updateRenewalDraft(renewal._id || renewal.id, {
-      fields,
+      fields: {
+        ...fields,
+        payment_details: paymentDetails,
+        fee_details: calculatedFeeDetails,
+      },
       documentIds: selectedDocs,
     })
     setRenewal(updated)
@@ -253,10 +262,7 @@ function RenewalDetailPage({ id }) {
       registrationNumber: fields.registration_no || fields.udyam_no || applicationRecord?.registrationNumber || '',
       enterpriseCategory: feeDetails.enterpriseCategory,
       applicationType: feeDetails.applicationType,
-      feeDetails: calculateFeeDetails({
-        ...feeDetails,
-        licenseType: feeDetails.licenseType || type?.name || updated.renewal_type_code,
-      }),
+      feeDetails: calculatedFeeDetails,
       paymentDetails,
       status: applicationRecord?.status || 'Draft',
       certificateStatus: applicationRecord?.certificateStatus || 'Not Ready',
@@ -321,7 +327,8 @@ function RenewalDetailPage({ id }) {
           amountPaid: Number(paymentDetails.amountPaid || feeDetails.totalAmount),
           paymentStatus: 'Pending Verification',
         },
-        status: 'Payment Pending',
+        status: normalizeStatus(updated.status),
+        trackingId: updated.fields?.tracking_id || applicationRecord?.trackingId,
         certificateStatus: 'Not Ready',
         submittedAt: new Date().toISOString(),
       })

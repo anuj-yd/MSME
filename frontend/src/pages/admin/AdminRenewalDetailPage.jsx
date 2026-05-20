@@ -14,7 +14,7 @@ import {
 } from '../../lib/applicationRecords.js'
 
 function AdminRenewalDetailPage({ id }) {
-  const { adminGetRenewal } = useAppActions()
+  const { adminGetRenewal, adminSetRenewalStatus } = useAppActions()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [data, setData] = useState(null)
@@ -41,9 +41,10 @@ function AdminRenewalDetailPage({ id }) {
         }
 
         const localRecord = getApplicationRecord(id)
+        const apiRecord = buildRecordFromApi(apiData, id)
         if (mounted) {
           setData(apiData)
-          setRecord(localRecord || buildRecordFromApi(apiData, id))
+          setRecord(apiRecord || localRecord)
           setRejectionReason(localRecord?.rejectionReason || '')
         }
       } catch (e) {
@@ -68,16 +69,24 @@ function AdminRenewalDetailPage({ id }) {
     return next
   }
 
-  async function setStatus(nextStatus) {
+  async function setStatus(nextStatus, note = '') {
     setStatusLoading(true)
     try {
+      const updated = await adminSetRenewalStatus(id, nextStatus, note)
+      if (updated) {
+        setData((current) => ({ ...(current || {}), renewal: updated }))
+      }
+      const normalizedStatus = normalizeStatus(updated?.status || nextStatus)
       patchRecord({
-        status: nextStatus,
-        certificateStatus: nextStatus === 'Certificate Ready' ? 'Ready' : record?.certificateStatus || 'Not Ready',
-        approvalDate: nextStatus === 'Approved' || nextStatus === 'Certificate Ready'
+        status: normalizedStatus,
+        certificateStatus: normalizedStatus === 'Certificate Ready' ? 'Ready' : record?.certificateStatus || 'Not Ready',
+        approvalDate: normalizedStatus === 'Approved' || normalizedStatus === 'Certificate Ready'
           ? record?.approvalDate || new Date().toLocaleDateString()
           : record?.approvalDate,
+        rejectionReason: normalizedStatus === 'Rejected' ? note || rejectionReason || 'Application rejected by admin.' : record?.rejectionReason,
       })
+    } catch (e) {
+      alert(e?.response?.data?.message || 'Failed to update status')
     } finally {
       setStatusLoading(false)
     }
@@ -94,10 +103,7 @@ function AdminRenewalDetailPage({ id }) {
   }
 
   function rejectApplication() {
-    patchRecord({
-      status: 'Rejected',
-      rejectionReason: rejectionReason || 'Application rejected by admin.',
-    })
+    setStatus('rejected', rejectionReason || 'Application rejected by admin.')
   }
 
   return (
@@ -183,13 +189,13 @@ function AdminRenewalDetailPage({ id }) {
           <div className="space-y-6">
             <SectionCard title="Admin actions" description="Move application through required status stages.">
               <div className="grid gap-2">
-                <button disabled={statusLoading} onClick={() => setStatus('Under Review')} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60">
-                  Mark Under Review
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('in_review')} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60">
+                  Mark Under Process
                 </button>
-                <button disabled={statusLoading} onClick={() => setStatus('Approved')} className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('approved')} className="rounded-xl bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">
                   Approve
                 </button>
-                <button disabled={statusLoading} onClick={() => setStatus('Certificate Ready')} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="button" disabled={statusLoading} onClick={() => setStatus('completed')} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
                   Mark Certificate Ready
                 </button>
               </div>
@@ -235,7 +241,7 @@ function AdminRenewalDetailPage({ id }) {
 function buildRecordFromApi(data, id) {
   if (!data?.renewal) return null
   const fields = data.renewal.fields || {}
-  const feeDetails = calculateFeeDetails({ licenseType: data.type?.name || data.renewal.renewal_type_code || '' })
+  const feeDetails = calculateFeeDetails(fields.fee_details || { licenseType: data.type?.name || data.renewal.renewal_type_code || '' })
   return {
     id,
     renewalTypeCode: data.renewal.renewal_type_code || '',
@@ -245,9 +251,11 @@ function buildRecordFromApi(data, id) {
     enterpriseCategory: feeDetails.enterpriseCategory,
     applicationType: feeDetails.applicationType,
     feeDetails,
-    paymentDetails: defaultPaymentDetails(feeDetails.totalAmount),
+    paymentDetails: fields.payment_details || defaultPaymentDetails(feeDetails.totalAmount),
     status: normalizeStatus(data.renewal.status),
     certificateStatus: 'Not Ready',
+    trackingId: fields.tracking_id,
+    submittedAt: data.renewal.submitted_at,
     user: data.user ? { id: data.user.id || data.user._id || '', name: data.user.name || '', email: data.user.email || '' } : null,
   }
 }

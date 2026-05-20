@@ -154,6 +154,9 @@ class RenewalController extends Controller
 
         $app->status = 'submitted';
         $app->submitted_at = now();
+        $fields = (array) ($app->fields ?? []);
+        $fields['tracking_id'] = $fields['tracking_id'] ?? $this->generateTrackingId();
+        $app->fields = $fields;
         $app->save();
 
         return response()->json(['renewal' => $app]);
@@ -246,5 +249,10 @@ class RenewalController extends Controller
                 $d
             );
         }
+    }
+
+    private function generateTrackingId(): string
+    {
+        return 'MSME-'.now()->format('Y').'-'.strtoupper(bin2hex(random_bytes(3)));
     }
 }

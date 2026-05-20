@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private const ADMIN_EMAIL = 'anushkasurya803@gmail.com';
     private const OTP_EXPIRES_MINUTES = 10;
     private const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
@@ -166,6 +167,7 @@ class AuthController extends Controller
         $plainToken = bin2hex(random_bytes(24));
         $user->api_token_hash = hash('sha256', $plainToken);
         $user->api_token_created_at = now();
+        $user->role = $this->roleFor($user);
         $user->save();
 
         return response()->json([
@@ -174,6 +176,7 @@ class AuthController extends Controller
                 'id' => (string) $user->getKey(),
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $this->roleFor($user),
                 'email_verified_at' => $user->email_verified_at,
             ],
         ]);
@@ -182,12 +185,19 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
+        $role = $this->roleFor($user);
+
+        if (($user->role ?? 'user') !== $role) {
+            $user->role = $role;
+            $user->save();
+        }
 
         return response()->json([
             'user' => [
                 'id' => (string) $user->getKey(),
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $role,
                 'email_verified_at' => $user->email_verified_at,
             ],
         ]);
@@ -228,5 +238,10 @@ class AuthController extends Controller
             expiresMinutes: self::OTP_EXPIRES_MINUTES,
             appName: $appName,
         ));
+    }
+
+    private function roleFor(User $user): string
+    {
+        return mb_strtolower((string) $user->email) === self::ADMIN_EMAIL ? 'admin' : 'user';
     }
 }

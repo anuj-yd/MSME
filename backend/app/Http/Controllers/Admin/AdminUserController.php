@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class AdminUserController extends Controller
 {
+    private const ADMIN_EMAIL = 'anushkasurya803@gmail.com';
+
     public function index(Request $request)
     {
         // Simple list of all users, sorted by latest
@@ -16,7 +18,7 @@ class AdminUserController extends Controller
                 'id' => (string) $u->getKey(),
                 'name' => $u->name,
                 'email' => $u->email,
-                'role' => $u->role ?? 'user',
+                'role' => mb_strtolower((string) $u->email) === self::ADMIN_EMAIL ? 'admin' : 'user',
                 'created_at' => $u->created_at,
             ];
         })->values();
@@ -33,7 +35,15 @@ class AdminUserController extends Controller
         $user = User::query()->where('_id', $id)->first();
         if (! $user) return response()->json(['message' => 'Not found.'], 404);
 
-        $user->role = $data['role'];
+        if (mb_strtolower((string) $user->email) === self::ADMIN_EMAIL) {
+            return response()->json(['message' => 'Primary admin role is fixed for this account.'], 422);
+        }
+
+        if ($data['role'] === 'admin') {
+            return response()->json(['message' => 'Only anushkasurya803@gmail.com can be admin.'], 422);
+        }
+
+        $user->role = 'user';
         $user->save();
 
         return response()->json(['user' => [

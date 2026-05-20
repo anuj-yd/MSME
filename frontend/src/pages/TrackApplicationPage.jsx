@@ -1,15 +1,47 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PageShell, SectionCard } from './dashboard/DashboardComponents.jsx'
 import { ApplicationTracker } from '../components/ApplicationTracker.jsx'
 import { CertificateDownload } from '../components/CertificateDownload.jsx'
-import { findApplicationByTrackingId } from '../lib/applicationRecords.js'
+import { calculateFeeDetails, defaultPaymentDetails, findApplicationByTrackingId, normalizeStatus } from '../lib/applicationRecords.js'
+import { useAppActions, useAppState } from '../state/appStore.jsx'
 
 function TrackApplicationPage({ initialTrackingId = '' }) {
+  const { renewals, renewalTypes } = useAppState()
+  const { refreshRenewals, fetchRenewalTypes } = useAppActions()
   const [trackingId, setTrackingId] = useState(initialTrackingId)
   const [searched, setSearched] = useState(!!initialTrackingId)
+
+  useEffect(() => {
+    if (!searched) return
+    refreshRenewals().catch(() => {})
+    fetchRenewalTypes().catch(() => {})
+  }, [searched, refreshRenewals, fetchRenewalTypes])
+
   const record = useMemo(
-    () => (searched ? findApplicationByTrackingId(trackingId) : null),
-    [searched, trackingId],
+    () => {
+      if (!searched) return null
+      const normalized = String(trackingId || '').trim().toUpperCase()
+      const renewal = (renewals || []).find((item) => String(item.fields?.tracking_id || '').toUpperCase() === normalized)
+      if (!renewal) return findApplicationByTrackingId(trackingId)
+
+      const type = (renewalTypes || []).find((item) => item.code === renewal.renewal_type_code)
+      const fields = renewal.fields || {}
+      const feeDetails = calculateFeeDetails(fields.fee_details || { licenseType: type?.name || renewal.renewal_type_code || '' })
+
+      return {
+        id: renewal._id || renewal.id,
+        trackingId: fields.tracking_id,
+        renewalTypeName: type?.name || renewal.renewal_type_code,
+        businessName: fields.business_name || fields.enterprise_name || 'Business',
+        registrationNumber: fields.registration_no || fields.udyam_no || '',
+        feeDetails,
+        paymentDetails: fields.payment_details || defaultPaymentDetails(feeDetails.totalAmount),
+        status: normalizeStatus(renewal.status),
+        certificateStatus: renewal.status === 'completed' ? 'Ready' : 'Not Ready',
+        rejectionReason: (fields.admin_notes || []).at?.(-1)?.note || '',
+      }
+    },
+    [searched, trackingId, renewals, renewalTypes],
   )
 
   function onSubmit(event) {
@@ -49,7 +81,7 @@ function TrackApplicationPage({ initialTrackingId = '' }) {
 
           {searched && !record ? (
             <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              No application found for this Tracking ID on this browser.
+              No application found for this Tracking ID in your account.
             </div>
           ) : null}
         </SectionCard>

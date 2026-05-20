@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageShell, SectionCard, StatCard } from './dashboard/DashboardComponents.jsx'
 import { useAppActions, useAppState } from '../state/appStore.jsx'
 import { EmptyState, Modal, Pill } from './renewals/RenewalComponents.jsx'
+import { normalizeStatus } from '../lib/applicationRecords.js'
 
 function RenewalsPage() {
   const { renewals, renewalTypes, loading, errors } = useAppState()
@@ -130,7 +131,9 @@ function RenewalsPage() {
                       </div>
                     </div>
                     <div className="col-span-3 flex items-center">
-                      <Pill tone={r.status === 'submitted' ? 'info' : 'warn'}>{r.status}</Pill>
+                      <Pill tone={r.status === 'rejected' ? 'warn' : r.status === 'approved' || r.status === 'completed' ? 'ok' : 'info'}>
+                        {normalizeStatus(r.status)}
+                      </Pill>
                     </div>
                     <div className="col-span-3 flex items-center justify-end text-xs text-slate-600">
                       {r.updated_at ? new Date(r.updated_at).toLocaleString() : '—'}

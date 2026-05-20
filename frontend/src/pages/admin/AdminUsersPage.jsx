@@ -45,7 +45,7 @@ export default function AdminUsersPage() {
     <AdminLayout title="Admin • Users" subtitle="Manage registered users and roles">
       <SectionCard 
         title="All Users" 
-        description="View and manage users registered on the platform. Admins can promote other users to admin."
+        description="View users registered on the platform. Admin access is fixed to anushkasurya803@gmail.com."
       >
         {error ? (
           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -81,7 +81,7 @@ export default function AdminUsersPage() {
                     </Pill>
                   </div>
                   <div className="col-span-3 flex items-center justify-end">
-                    {currentUser?.id !== u.id && (
+                    {u.role !== 'admin' && currentUser?.id !== u.id && (
                       <select
                         value={u.role || 'user'}
                         disabled={updating === u.id}
@@ -89,12 +89,13 @@ export default function AdminUsersPage() {
                         className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
                       >
                         <option value="user">Make User</option>
-                        <option value="admin">Make Admin</option>
                       </select>
                     )}
-                    {currentUser?.id === u.id && (
+                    {u.role === 'admin' ? (
+                      <span className="text-xs text-slate-400 italic">Fixed admin</span>
+                    ) : currentUser?.id === u.id ? (
                       <span className="text-xs text-slate-400 italic">It's you</span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}

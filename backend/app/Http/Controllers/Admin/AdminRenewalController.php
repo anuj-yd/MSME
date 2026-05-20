@@ -74,7 +74,7 @@ class AdminRenewalController extends Controller
     public function setStatus(Request $request, string $id)
     {
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:submitted,in_review,otp_required,filed,completed,rejected'],
+            'status' => ['required', 'string', 'in:submitted,in_review,approved,otp_required,filed,completed,rejected'],
             'note' => ['sometimes', 'string', 'max:500'],
         ]);
 
@@ -97,4 +97,3 @@ class AdminRenewalController extends Controller
         return response()->json(['renewal' => $app]);
     }
 }
-

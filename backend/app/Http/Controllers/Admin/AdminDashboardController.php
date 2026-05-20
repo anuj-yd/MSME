@@ -22,6 +22,7 @@ class AdminDashboardController extends Controller
             'submitted' => RenewalApplication::query()->where('status', 'submitted')->count(),
             'otp_required' => RenewalApplication::query()->where('status', 'otp_required')->count(),
             'in_review' => RenewalApplication::query()->where('status', 'in_review')->count(),
+            'approved' => RenewalApplication::query()->where('status', 'approved')->count(),
             'filed' => RenewalApplication::query()->where('status', 'filed')->count(),
             'completed' => RenewalApplication::query()->where('status', 'completed')->count(),
             'rejected' => RenewalApplication::query()->where('status', 'rejected')->count(),

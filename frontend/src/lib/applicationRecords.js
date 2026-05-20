@@ -142,9 +142,10 @@ export function ensureApplicationRecord({ renewal, type, user, fields = {} }) {
     applicationType: feeDetails.applicationType,
     feeDetails,
     paymentDetails,
-    status: existing?.status || normalizeStatus(renewal.status),
+    status: normalizeStatus(renewal.status),
     certificateStatus: existing?.certificateStatus || 'Not Ready',
     rejectionReason: existing?.rejectionReason || '',
+    trackingId: fields.tracking_id || existing?.trackingId,
     submittedAt: renewal.submitted_at || existing?.submittedAt || null,
   })
 }

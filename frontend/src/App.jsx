@@ -14,6 +14,7 @@ import AdminRenewalsPage from './pages/admin/AdminRenewalsPage.jsx'
 import AdminRenewalDetailPage from './pages/admin/AdminRenewalDetailPage.jsx'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
+import { AdminAuthGate } from './pages/admin/AdminAuthGate.jsx'
 import OtpApprovalPage from './pages/OtpApprovalPage.jsx'
 import { useEffect, useState } from 'react'
 import { GoogleTranslateElement } from './components/GoogleTranslate.jsx'
@@ -82,6 +83,7 @@ function App() {
 
   let page = <LandingPage />
   if (pathname === '/login') page = <LoginPage />
+  else if (pathname === '/admin/login') page = <LoginPage mode="admin" />
   else if (pathname === '/register') page = <RegisterPage />
   else if (pathname === '/verify') page = <VerifyOtpPage email={params.get('email') || ''} />
   else if (pathname === '/dashboard') page = <UserDashboardPage />
@@ -94,12 +96,12 @@ function App() {
     const id = decodeURIComponent(pathname.replace('/certificate/', ''))
     page = <CertificatePage id={id} />
   }
-  else if (pathname === '/admin' || pathname === '/admin/dashboard') page = <AdminDashboardPage />
-  else if (pathname === '/admin/users') page = <AdminUsersPage />
-  else if (pathname === '/admin/renewals') page = <AdminRenewalsPage />
+  else if (pathname === '/admin' || pathname === '/admin/dashboard') page = <AdminAuthGate><AdminDashboardPage /></AdminAuthGate>
+  else if (pathname === '/admin/users') page = <AdminAuthGate><AdminUsersPage /></AdminAuthGate>
+  else if (pathname === '/admin/renewals') page = <AdminAuthGate><AdminRenewalsPage /></AdminAuthGate>
   else if (pathname.startsWith('/admin/renewals/')) {
     const id = decodeURIComponent(pathname.replace('/admin/renewals/', ''))
-    page = <AdminRenewalDetailPage id={id} />
+    page = <AdminAuthGate><AdminRenewalDetailPage id={id} /></AdminAuthGate>
   } else if (pathname.startsWith('/otp/')) {
     const id = decodeURIComponent(pathname.replace('/otp/', ''))
     page = <OtpApprovalPage renewalId={id} />

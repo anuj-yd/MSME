@@ -124,6 +124,10 @@ function UserDashboardPage() {
   }, [bootstrap])
 
   useEffect(() => {
+    if (user?.role === 'admin') window.location.hash = '#/admin/dashboard'
+  }, [user])
+
+  useEffect(() => {
     function syncTrackingRecords() {
       setTrackingRecords(readApplicationRecords().slice(0, 5))
     }

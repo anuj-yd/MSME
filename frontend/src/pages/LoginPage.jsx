@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useAppActions } from '../state/appStore.jsx'
 
-function LoginPage() {
-  const { login } = useAppActions()
+function LoginPage({ mode = 'user' }) {
+  const { login, logout } = useAppActions()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const isAdmin = mode === 'admin'
 
   const canSubmit = useMemo(
     () => email.trim() && password && !loading,
@@ -23,7 +24,13 @@ function LoginPage() {
         window.location.hash = `#/verify?email=${encodeURIComponent(res.email || email)}`
         return
       }
-      window.location.hash = '#/dashboard'
+      const role = res?.user?.role || 'user'
+      if (isAdmin && role !== 'admin') {
+        await logout()
+        setError('This account does not have admin access.')
+        return
+      }
+      window.location.hash = role === 'admin' ? '#/admin/dashboard' : '#/dashboard'
     } catch (err) {
       const message =
         err?.response?.data?.message ||
@@ -56,7 +63,9 @@ function LoginPage() {
         <div className="rounded-[2rem] border border-white/60 bg-white/70 p-8 shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:p-10">
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-            <p className="mt-2 text-sm text-slate-500">Sign in to your MSE account to continue.</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {isAdmin ? 'Sign in to the admin console.' : 'Sign in to your MSE account to continue.'}
+            </p>
           </div>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -85,7 +94,7 @@ function LoginPage() {
                 className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm outline-none transition-all focus:border-primary-500 focus:bg-white focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-400"
                 type="password"
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="Password"
                 required
               />
             </div>
@@ -110,22 +119,31 @@ function LoginPage() {
                   Signing in...
                 </span>
               ) : (
-                'Sign in'
+                isAdmin ? 'Sign in as admin' : 'Sign in'
               )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-500">
-            Don't have an account?{' '}
-            <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/register">
-              Create an account
-            </a>
-          </p>
+          {isAdmin ? (
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Need the user area?{' '}
+              <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/login">
+                User login
+              </a>
+            </p>
+          ) : (
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Don't have an account?{' '}
+              <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/register">
+                Create an account
+              </a>
+            </p>
+          )}
         </div>
         
         <div className="mt-8 text-center">
           <a className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-800" href="#/">
-            ← Back to home
+            Back to home
           </a>
         </div>
       </div>

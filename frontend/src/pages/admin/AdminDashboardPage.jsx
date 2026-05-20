@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react'
 import { AdminLayout } from './AdminLayout.jsx'
 import { SectionCard, StatCard } from '../dashboard/DashboardComponents.jsx'
 import { useAppActions } from '../../state/appStore.jsx'
-import { readApplicationRecords } from '../../lib/applicationRecords.js'
 
 export default function AdminDashboardPage() {
   const { adminGetStats } = useAppActions()
   const [stats, setStats] = useState(null)
-  const [localStats, setLocalStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -27,24 +25,6 @@ export default function AdminDashboardPage() {
     return () => { mounted = false }
   }, [adminGetStats])
 
-  useEffect(() => {
-    function syncLocalStats() {
-      const records = readApplicationRecords()
-      setLocalStats({
-        total: records.length,
-        pendingReview: records.filter((item) => item.status === 'Submitted' || item.status === 'Under Review').length,
-        paymentPending: records.filter((item) => item.status === 'Payment Pending').length,
-        approved: records.filter((item) => item.status === 'Approved').length,
-        rejected: records.filter((item) => item.status === 'Rejected').length,
-        certificateReady: records.filter((item) => item.status === 'Certificate Ready').length,
-      })
-    }
-
-    syncLocalStats()
-    window.addEventListener('application-records-change', syncLocalStats)
-    return () => window.removeEventListener('application-records-change', syncLocalStats)
-  }, [])
-
   return (
     <AdminLayout title="Admin • Dashboard">
       {error && (
@@ -61,12 +41,12 @@ export default function AdminDashboardPage() {
         <div className="space-y-6">
           <SectionCard title="Application workflow stats" description="Tracking, payment, and certificate workflow.">
             <div className="grid gap-4 md:grid-cols-3 mt-4">
-              <StatCard label="Total Applications" value={localStats?.total || 0} tone="primary" />
-              <StatCard label="Pending Review" value={localStats?.pendingReview || 0} />
-              <StatCard label="Payment Pending" value={localStats?.paymentPending || 0} tone="warn" />
-              <StatCard label="Approved" value={localStats?.approved || 0} />
-              <StatCard label="Rejected" value={localStats?.rejected || 0} tone="warn" />
-              <StatCard label="Certificate Ready" value={localStats?.certificateReady || 0} />
+              <StatCard label="Total Applications" value={stats.total_applications || 0} tone="primary" />
+              <StatCard label="Submitted" value={stats.applications_by_status?.submitted || 0} />
+              <StatCard label="Under Process" value={stats.applications_by_status?.in_review || 0} />
+              <StatCard label="Approved" value={stats.applications_by_status?.approved || 0} />
+              <StatCard label="Rejected" value={stats.applications_by_status?.rejected || 0} tone="warn" />
+              <StatCard label="Certificate Ready" value={stats.applications_by_status?.completed || 0} />
             </div>
           </SectionCard>
 
@@ -96,6 +76,11 @@ export default function AdminDashboardPage() {
                 label="In Review" 
                 value={stats.applications_by_status?.in_review || 0} 
                 hint="Processing by admin" 
+              />
+              <StatCard 
+                label="Approved" 
+                value={stats.applications_by_status?.approved || 0} 
+                hint="Accepted by admin" 
               />
               <StatCard 
                 label="Completed" 
