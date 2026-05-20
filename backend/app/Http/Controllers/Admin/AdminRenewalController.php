@@ -8,6 +8,8 @@ use App\Models\Payment;
 use App\Models\RenewalApplication;
 use App\Models\RenewalType;
 use App\Models\User;
+use App\Mail\ApprovalMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
 class AdminRenewalController extends Controller
@@ -94,6 +96,19 @@ class AdminRenewalController extends Controller
             $app->fields = $fields;
         }
         $app->save();
+
+        // Send approval email when application is approved or marked completed
+        if (in_array($data['status'], ['approved', 'completed'])) {
+            try {
+                $user = User::query()->where('_id', (string) $app->user_id)->first();
+                if ($user && !empty($user->email)) {
+                    Mail::to($user->email)->send(new ApprovalMail($user->name ?? 'Applicant', $app->fields['tracking_id'] ?? (string) $app->getKey(), config('app.name')));
+                }
+            } catch (\Throwable $e) {
+                // Do not break the API if mail fails; log silently
+                report($e);
+            }
+        }
 
         return response()->json(['renewal' => $app]);
     }

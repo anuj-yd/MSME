@@ -1,3 +1,5 @@
+// Lazy-load `jspdf` inside the download function to avoid import-time failures
+
 const STORAGE_KEY = 'msme_application_records'
 
 export const APPLICATION_STATUSES = [
@@ -171,15 +173,119 @@ export function buildCertificateText(record) {
   return lines.join('\n')
 }
 
-export function downloadMockCertificate(record) {
-  const text = buildCertificateText(record)
-  const blob = new Blob([text], { type: 'application/pdf' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${record.trackingId || 'certificate'}.pdf`
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+export async function downloadMockCertificate(record) {
+  try {
+    // dynamic import to avoid import-time failures
+    const mod = await import('jspdf')
+    const jsPDF = mod.jsPDF || mod.default?.jsPDF || mod.default || mod
+
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    // jsPDF exposes page size in different shapes depending on version/build.
+    // Use safe fallbacks to obtain width/height.
+    const pageSize = doc?.internal?.pageSize || doc?.internal?.pageSizePtr || {}
+    const w = (typeof pageSize.getWidth === 'function') ? pageSize.getWidth() : (pageSize.width || pageSize.w || 595.28)
+    const h = (typeof pageSize.getHeight === 'function') ? pageSize.getHeight() : (pageSize.height || pageSize.h || 841.89)
+
+    // Colors
+    const navy = [12, 48, 83]
+    const lightNavy = [22, 66, 110]
+    const gold = [212, 175, 55]
+
+    // Background border
+    doc.setFillColor(...navy)
+    doc.rect(0, 0, w, h, 'F')
+
+    // Inner white panel
+    const margin = 28
+    doc.setFillColor(255, 255, 255)
+    doc.rect(margin, margin, w - margin * 2, h - margin * 2, 'F')
+
+    // Left decorative panel
+    const leftW = 220
+    doc.setFillColor(...lightNavy)
+    doc.rect(margin + 12, margin + 12, leftW, h - (margin + 12) * 2, 'F')
+
+    // Main white area coordinates
+    const innerX = margin + 12 + leftW + 20
+    const innerWidth = w - (innerX + margin + 12)
+
+    // Title
+    doc.setTextColor(...navy)
+    doc.setFont('times', 'normal')
+    doc.setFontSize(36)
+    doc.text('CERTIFICATE OF APPROVAL', innerX + innerWidth / 2, margin + 90, { align: 'center' })
+
+    // Subtitle
+    doc.setFontSize(12)
+    doc.setFont('times', 'normal')
+    doc.text('This certificate is proudly presented to', innerX + innerWidth / 2, margin + 130, { align: 'center' })
+
+    // Recipient name (business name)
+    const recipient = record?.businessName || '—'
+    doc.setFontSize(34)
+    doc.setFont('times', 'italic')
+    doc.text(recipient, innerX + innerWidth / 2, margin + 180, { align: 'center' })
+
+    // Detail line
+    doc.setFontSize(12)
+    doc.setFont('times', 'normal')
+    const licenseLine = `Registration / License No: ${record.registrationNumber || '—'}`
+    const trackingLine = `Tracking ID: ${record.trackingId || '—'}`
+    const approvalLine = `Approval Date: ${record.approvalDate || new Date().toLocaleDateString()}`
+    doc.text(licenseLine, innerX + 40, margin + 230)
+    doc.text(trackingLine, innerX + 40, margin + 250)
+    doc.text(approvalLine, innerX + 40, margin + 270)
+
+    // Organization and website
+    const org = (document.title && document.title.trim()) || window.location.hostname || 'MSME Portal'
+    const site = window.location.origin || ''
+    doc.setFontSize(11)
+    doc.text(`${org} • ${site}`, innerX + innerWidth / 2, margin + 300, { align: 'center' })
+
+    // Signature lines
+    const sigY = h - margin - 140
+    const sigWidth = 180
+    // Left signature
+    const leftSigX = innerX + 40
+    doc.setDrawColor(...navy)
+    doc.setLineWidth(0.8)
+    doc.line(leftSigX, sigY, leftSigX + sigWidth, sigY)
+    doc.setFontSize(11)
+    doc.text('Authorized Signatory', leftSigX, sigY + 18)
+    doc.text(org, leftSigX, sigY + 34)
+    // Right signature
+    const rightSigX = innerX + innerWidth - 40 - sigWidth
+    doc.line(rightSigX, sigY, rightSigX + sigWidth, sigY)
+    doc.text('Registrar', rightSigX, sigY + 18)
+    doc.text(org, rightSigX, sigY + 34)
+
+    // Gold seal (circle) at top-right of inner area
+    const sealX = innerX + innerWidth - 100
+    const sealY = margin + 140
+    doc.setFillColor(...gold)
+    doc.circle(sealX, sealY, 34, 'F')
+    doc.setFillColor(255, 255, 255)
+    doc.setFontSize(10)
+    doc.text('APPROVED', sealX, sealY + 4, { align: 'center' })
+
+    // Footer small note
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text('This certificate is system-generated. Verify at ' + site, innerX + 40, h - margin - 20)
+
+    const fileName = `${record.trackingId || 'certificate'}.pdf`
+    doc.save(fileName)
+  } catch (e) {
+    console.error('Certificate generation failed:', e)
+    const text = buildCertificateText(record)
+    const blob = new Blob([text], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${record.trackingId || 'certificate'}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
 }

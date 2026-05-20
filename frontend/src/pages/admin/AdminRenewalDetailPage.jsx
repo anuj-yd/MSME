@@ -12,6 +12,7 @@ import {
   normalizeStatus,
   saveApplicationRecord,
 } from '../../lib/applicationRecords.js'
+import { notifyLocalApplicationUpdate } from '../../lib/realtime.js'
 
 function AdminRenewalDetailPage({ id }) {
   const { adminGetRenewal, adminSetRenewalStatus, adminVerifyRenewalPayment } = useAppActions()
@@ -85,6 +86,8 @@ function AdminRenewalDetailPage({ id }) {
           : record?.approvalDate,
         rejectionReason: normalizedStatus === 'Rejected' ? note || rejectionReason || 'Application rejected by admin.' : record?.rejectionReason,
       })
+      // notify other open tabs/clients that records changed
+      try { notifyLocalApplicationUpdate() } catch (e) {}
     } catch (e) {
       alert(e?.response?.data?.message || 'Failed to update status')
     } finally {
