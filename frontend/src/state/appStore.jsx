@@ -291,7 +291,9 @@ export function AppStoreProvider({ children }) {
     }
 
     async function adminSetRenewalStatus(id, status, note = '') {
-      const res = await api.post(`/admin/renewals/${id}/status`, { status, note })
+      const payload = { status }
+      if (typeof note === 'string' && note.length > 0) payload.note = note
+      const res = await api.post(`/admin/renewals/${id}/status`, payload)
       return res?.data?.renewal
     }
 

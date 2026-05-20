@@ -75,7 +75,7 @@ class AdminRenewalController extends Controller
     {
         $data = $request->validate([
             'status' => ['required', 'string', 'in:submitted,in_review,approved,otp_required,filed,completed,rejected'],
-            'note' => ['sometimes', 'string', 'max:500'],
+            'note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $app = RenewalApplication::query()->where('_id', $id)->first();
