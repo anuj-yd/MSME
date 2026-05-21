@@ -5,10 +5,8 @@ import { useAppActions } from '../../state/appStore.jsx'
 import { normalizeStatus } from '../../lib/applicationRecords.js'
 
 const STATUS_ORDER = [
-  'draft',
   'submitted',
   'payment_verified',
-  'otp_required',
   'in_review',
   'approved',
   'filed',
@@ -56,7 +54,7 @@ function AdminDashboardPage() {
   const actionCards = [
     {
       title: 'Review Applications',
-      description: 'Open submitted cases, verify documents, request OTPs, and update filing status.',
+      description: 'Open submitted cases, verify documents, and update filing status.',
       href: '#/admin/renewals',
     },
     {

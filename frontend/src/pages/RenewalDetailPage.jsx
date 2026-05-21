@@ -153,7 +153,11 @@ function RenewalDetailPage({ id }) {
     })
 
     return () => {
-      try { unsubscribe() } catch (e) {}
+      try {
+        unsubscribe()
+      } catch {
+        // Background status subscriptions are best-effort.
+      }
     }
   }, [renewal, getRenewal, id, type])
 
@@ -620,11 +624,11 @@ function RenewalDetailPage({ id }) {
                     Previous
                   </button>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                     <button
                       type="button"
                       onClick={clearLocalDraft}
-                      className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900 hover:bg-amber-100"
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 text-sm font-semibold text-amber-900 hover:bg-amber-100"
                     >
                       Clear Draft
                     </button>
@@ -632,17 +636,17 @@ function RenewalDetailPage({ id }) {
                       <button
                         type="button"
                         onClick={goToNextStep}
-                        className="rounded-xl bg-[#1E5AA6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#184D8E]"
+                        className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1E5AA6] px-5 text-sm font-semibold text-white hover:bg-[#184D8E]"
                       >
                         Next
                       </button>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="max-w-md space-y-2">
                         <button
                           type="button"
                           onClick={onSubmit}
                           disabled={submitting || !canSubmit}
-                          className="rounded-xl bg-[#1E5AA6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1E5AA6] px-5 text-sm font-semibold text-white hover:bg-[#184D8E] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {submitButtonLabel}
                         </button>

@@ -14,7 +14,6 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Admin\AdminRenewalController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\OtpApprovalController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -71,10 +70,4 @@ Route::prefix('admin')->middleware([ApiTokenAuth::class, EnsureAdmin::class])->g
     Route::get('/renewals/{id}', [AdminRenewalController::class, 'show']);
     Route::post('/renewals/{id}/status', [AdminRenewalController::class, 'setStatus']);
     Route::post('/renewals/{id}/payment/verify', [AdminRenewalController::class, 'verifyPayment']);
-    Route::post('/renewals/{id}/otp/request', [OtpApprovalController::class, 'requestOtp']);
-    Route::get('/renewals/{id}/otp', [OtpApprovalController::class, 'adminGetOtp']);
-});
-
-Route::middleware(ApiTokenAuth::class)->group(function () {
-    Route::post('/renewals/{id}/otp', [OtpApprovalController::class, 'submitOtp']);
 });

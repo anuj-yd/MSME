@@ -14,6 +14,16 @@ import {
 } from '../../lib/applicationRecords.js'
 import { notifyLocalApplicationUpdate } from '../../lib/realtime.js'
 
+const ADMIN_TRACKER_STATUSES = [
+  'Submitted',
+  'Payment Verified',
+  'Under Review',
+  'Approved',
+  'Filed',
+  'Certificate Ready',
+  'Rejected',
+]
+
 function AdminRenewalDetailPage({ id }) {
   const { adminGetRenewal, adminSetRenewalStatus, adminVerifyRenewalPayment } = useAppActions()
   const [loading, setLoading] = useState(true)
@@ -87,7 +97,11 @@ function AdminRenewalDetailPage({ id }) {
         rejectionReason: normalizedStatus === 'Rejected' ? note || rejectionReason || 'Application rejected by admin.' : record?.rejectionReason,
       })
       // notify other open tabs/clients that records changed
-      try { notifyLocalApplicationUpdate() } catch (e) {}
+      try {
+        notifyLocalApplicationUpdate()
+      } catch {
+        // Local cross-tab notification is best-effort.
+      }
     } catch (e) {
       alert(e?.response?.data?.message || 'Failed to update status')
     } finally {
@@ -140,13 +154,13 @@ function AdminRenewalDetailPage({ id }) {
 
               <div className="mt-5 flex items-center justify-between">
                 <div className="text-sm font-semibold">Current status</div>
-                <Pill tone={record?.status === 'Rejected' || record?.status === 'OTP Required' ? 'warn' : 'ok'}>
+                <Pill tone={record?.status === 'Rejected' ? 'warn' : 'ok'}>
                   {record?.status || '-'}
                 </Pill>
               </div>
 
               <div className="mt-5">
-                <ApplicationTracker record={record} />
+                <ApplicationTracker record={record} statuses={ADMIN_TRACKER_STATUSES} fallbackStatus="Submitted" />
               </div>
             </SectionCard>
 

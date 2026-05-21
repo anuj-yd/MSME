@@ -200,20 +200,13 @@ Frontend:
 Goal: Admin/operator uses user-submitted data + documents to file on government portal.
 
 Backend (admin-only, Bearer token required):
-- `GET /api/admin/renewals?status=submitted|otp_required|...`
+- `GET /api/admin/renewals?status=submitted|payment_verified|in_review|approved|filed|completed|rejected|all`
 - `GET /api/admin/renewals/{id}`
 - `POST /api/admin/renewals/{id}/status`
-- `POST /api/admin/renewals/{id}/otp/request` (creates OTP request, 5 min expiry)
-- `GET /api/admin/renewals/{id}/otp` (reveals OTP **once** to requesting admin)
 
 Frontend routes:
 - Admin inbox: `/#/admin/renewals`
 - Admin case: `/#/admin/renewals/<id>`
-
-Security model (OTP):
-- Admin requests OTP → user receives OTP from govt portal → user enters OTP in our app
-- OTP is stored **encrypted**, expires in 5 minutes, and can be revealed **only once** to the requesting admin
-- User OTP page: `/#/otp/<renewalId>`
 
 Admin access:
 - Create an admin user by setting `role=admin` on a user record in MongoDB (default is `user`).

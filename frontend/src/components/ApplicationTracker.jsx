@@ -1,8 +1,9 @@
 import { APPLICATION_STATUSES } from '../lib/applicationRecords.js'
 import { Pill } from '../pages/renewals/RenewalComponents.jsx'
 
-export function ApplicationTracker({ record }) {
-  const currentIndex = Math.max(0, APPLICATION_STATUSES.indexOf(record?.status || 'Draft'))
+export function ApplicationTracker({ record, statuses = APPLICATION_STATUSES, fallbackStatus = 'Draft' }) {
+  const currentStatus = record?.status || fallbackStatus
+  const currentIndex = Math.max(0, statuses.indexOf(currentStatus))
 
   return (
     <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
@@ -15,7 +16,7 @@ export function ApplicationTracker({ record }) {
         </div>
         <div className="shrink-0 self-start">
           <Pill tone={record?.status === 'Rejected' ? 'warn' : record?.status === 'Certificate Ready' ? 'ok' : 'info'}>
-            {record?.status || 'Draft'}
+            {currentStatus}
           </Pill>
         </div>
       </div>
@@ -23,12 +24,12 @@ export function ApplicationTracker({ record }) {
       <div className="mt-5 h-2 rounded-full bg-slate-100">
         <div
           className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-emerald-500 transition-all"
-          style={{ width: `${((currentIndex + 1) / APPLICATION_STATUSES.length) * 100}%` }}
+          style={{ width: `${((currentIndex + 1) / statuses.length) * 100}%` }}
         />
       </div>
 
       <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-2">
-        {APPLICATION_STATUSES.map((status, index) => {
+        {statuses.map((status, index) => {
           const done = index <= currentIndex
           return (
             <div

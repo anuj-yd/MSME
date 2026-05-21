@@ -16,7 +16,6 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx'
 import { AdminAuthGate } from './pages/admin/AdminAuthGate.jsx'
-import OtpApprovalPage from './pages/OtpApprovalPage.jsx'
 import { useEffect, useState } from 'react'
 import { GoogleTranslateElement } from './components/GoogleTranslate.jsx'
 
@@ -104,9 +103,6 @@ function App() {
   else if (pathname.startsWith('/admin/renewals/')) {
     const id = decodeURIComponent(pathname.replace('/admin/renewals/', ''))
     page = <AdminAuthGate><AdminRenewalDetailPage id={id} /></AdminAuthGate>
-  } else if (pathname.startsWith('/otp/')) {
-    const id = decodeURIComponent(pathname.replace('/otp/', ''))
-    page = <OtpApprovalPage renewalId={id} />
   } else if (pathname.startsWith('/renewals/')) {
     const id = decodeURIComponent(pathname.replace('/renewals/', ''))
     page = <RenewalDetailPage id={id} />

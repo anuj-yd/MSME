@@ -5,6 +5,16 @@ import { useAppActions } from '../../state/appStore.jsx'
 import { Pill } from '../renewals/RenewalComponents.jsx'
 import { normalizeStatus } from '../../lib/applicationRecords.js'
 
+const ADMIN_VISIBLE_STATUSES = new Set([
+  'submitted',
+  'payment_verified',
+  'in_review',
+  'approved',
+  'filed',
+  'completed',
+  'rejected',
+])
+
 function AdminRenewalsPage() {
   const { adminListRenewals } = useAppActions()
   const [status, setStatus] = useState('submitted')
@@ -19,7 +29,7 @@ function AdminRenewalsPage() {
       setLoading(true)
       try {
         const res = await adminListRenewals('all')
-        if (mounted) setApiItems(res)
+        if (mounted) setApiItems(res.filter((item) => ADMIN_VISIBLE_STATUSES.has(item.status)))
       } catch (e) {
         setError(e?.response?.data?.message || e.message || 'Failed to load admin renewals')
       } finally {
@@ -42,19 +52,17 @@ function AdminRenewalsPage() {
     total: items.length,
     submitted: items.filter((item) => item.status === 'submitted').length,
     paymentVerified: items.filter((item) => item.status === 'payment_verified').length,
-    otp: items.filter((item) => item.status === 'otp_required').length,
     approved: items.filter((item) => item.status === 'approved' || item.status === 'completed').length,
     review: items.filter((item) => item.status === 'in_review').length,
     rejected: items.filter((item) => item.status === 'rejected').length,
   }), [items])
 
   return (
-    <AdminLayout title="Applications" subtitle="Review applications, request OTPs, approve filings, and issue certificates">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+    <AdminLayout title="Applications" subtitle="Review applications, approve filings, and issue certificates">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <StatCard label="Total" value={`${counts.total}`} hint="Loaded list" tone="primary" />
         <StatCard label="Submitted" value={`${counts.submitted}`} hint="Ready to review" />
         <StatCard label="Payment Verified" value={`${counts.paymentVerified}`} hint="Admin checked" />
-        <StatCard label="OTP Required" value={`${counts.otp}`} hint="Waiting on user" tone="warn" />
         <StatCard label="In review" value={`${counts.review}`} hint="Being processed" />
         <StatCard label="Approved" value={`${counts.approved}`} hint="Approved or complete" />
         <StatCard label="Rejected" value={`${counts.rejected}`} hint="Sent back to user" tone="warn" />
@@ -73,7 +81,6 @@ function AdminRenewalsPage() {
               <option value="all">All</option>
               <option value="submitted">Submitted</option>
               <option value="payment_verified">Payment Verified</option>
-              <option value="otp_required">OTP Required</option>
               <option value="in_review">Under Process</option>
               <option value="approved">Approved</option>
               <option value="filed">Filed</option>

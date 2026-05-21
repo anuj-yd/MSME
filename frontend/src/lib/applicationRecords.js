@@ -8,6 +8,7 @@ export const APPLICATION_STATUSES = [
   'Payment Verified',
   'Under Review',
   'Approved',
+  'Filed',
   'Rejected',
   'Certificate Ready',
 ]
@@ -33,6 +34,7 @@ export function normalizeStatus(status) {
   if (raw === 'payment_pending' || raw === 'payment_verified') return 'Payment Verified'
   if (raw === 'in_review') return 'Under Review'
   if (raw === 'approved') return 'Approved'
+  if (raw === 'filed') return 'Filed'
   if (raw === 'rejected') return 'Rejected'
   if (raw === 'certificate_ready' || raw === 'completed') return 'Certificate Ready'
   return APPLICATION_STATUSES.includes(status) ? status : 'Draft'
@@ -186,11 +188,130 @@ export async function downloadMockCertificate(record) {
     const w = (typeof pageSize.getWidth === 'function') ? pageSize.getWidth() : (pageSize.width || pageSize.w || 595.28)
     const h = (typeof pageSize.getHeight === 'function') ? pageSize.getHeight() : (pageSize.height || pageSize.h || 841.89)
 
-    // Colors
     const navy = [12, 48, 83]
     const lightNavy = [22, 66, 110]
     const gold = [212, 175, 55]
+    const slate = [51, 65, 85]
+    const muted = [100, 116, 139]
+    const certificateOrg = (document.title && document.title.trim()) || window.location.hostname || 'MSME Portal'
+    const certificateSite = window.location.origin || ''
+    const certificateRecipient = String(record?.businessName || 'Business Name Not Provided')
+    const registrationNumber = String(record?.registrationNumber || 'Not provided')
+    const trackingId = String(record?.trackingId || 'Not generated')
+    const approvalDate = String(record?.approvalDate || new Date().toLocaleDateString())
 
+    function fitCenteredText(text, x, y, maxWidth, startSize, minSize = 10, options = {}) {
+      let size = startSize
+      doc.setFontSize(size)
+      while (size > minSize && doc.getTextWidth(text) > maxWidth) {
+        size -= 1
+        doc.setFontSize(size)
+      }
+      doc.text(text, x, y, { align: 'center', maxWidth, ...options })
+      return size
+    }
+
+    doc.setFillColor(...navy)
+    doc.rect(0, 0, w, h, 'F')
+
+    const panelMargin = 28
+    const panelX = panelMargin
+    const panelY = panelMargin
+    const panelW = w - panelMargin * 2
+    const panelH = h - panelMargin * 2
+    doc.setFillColor(255, 255, 255)
+    doc.rect(panelX, panelY, panelW, panelH, 'F')
+
+    const accentW = 76
+    doc.setFillColor(...lightNavy)
+    doc.rect(panelX + 12, panelY + 12, accentW, panelH - 24, 'F')
+    doc.setFillColor(...gold)
+    doc.rect(panelX + 12, panelY + 12, accentW, 84, 'F')
+
+    const contentX = panelX + accentW + 42
+    const contentW = panelX + panelW - contentX - 32
+    const centerX = contentX + contentW / 2
+    const topY = panelY + 92
+
+    doc.setTextColor(...navy)
+    doc.setFont('times', 'bold')
+    fitCenteredText('CERTIFICATE OF APPROVAL', centerX, topY, contentW, 26, 16)
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(12)
+    doc.setTextColor(...slate)
+    doc.text('This certificate is proudly presented to', centerX, topY + 42, { align: 'center' })
+
+    doc.setFont('times', 'italic')
+    doc.setTextColor(...navy)
+    const nameLines = doc.splitTextToSize(certificateRecipient, contentW - 40).slice(0, 2)
+    doc.setFontSize(nameLines.length > 1 ? 25 : 31)
+    doc.text(nameLines, centerX, topY + 92, { align: 'center', lineHeightFactor: 1.12 })
+
+    const detailsY = topY + 160 + (nameLines.length - 1) * 28
+    const details = [
+      ['Registration / License No:', registrationNumber],
+      ['Tracking ID:', trackingId],
+      ['Approval Date:', approvalDate],
+    ]
+    doc.setFontSize(11)
+    doc.setTextColor(...slate)
+    details.forEach(([label, value], index) => {
+      const y = detailsY + index * 22
+      doc.setFont('helvetica', 'bold')
+      doc.text(label, contentX + 20, y)
+      doc.setFont('helvetica', 'normal')
+      doc.text(value, contentX + 170, y, { maxWidth: contentW - 190 })
+    })
+
+    doc.setDrawColor(...gold)
+    doc.setLineWidth(1.2)
+    doc.line(contentX + 20, detailsY + 88, contentX + contentW - 20, detailsY + 88)
+
+    doc.setTextColor(...muted)
+    fitCenteredText(`${certificateOrg} | ${certificateSite}`, centerX, detailsY + 122, contentW - 40, 11, 8)
+
+    const signatureY = panelY + panelH - 118
+    const signatureW = Math.min(145, (contentW - 72) / 2)
+    const leftSignatureX = contentX + 28
+    const rightSignatureX = contentX + contentW - 28 - signatureW
+    doc.setDrawColor(...navy)
+    doc.setLineWidth(0.8)
+    doc.line(leftSignatureX, signatureY, leftSignatureX + signatureW, signatureY)
+    doc.line(rightSignatureX, signatureY, rightSignatureX + signatureW, signatureY)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...navy)
+    doc.text('Authorized Signatory', leftSignatureX, signatureY + 18)
+    doc.text('Registrar', rightSignatureX, signatureY + 18)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(...muted)
+    doc.text(certificateOrg, leftSignatureX, signatureY + 33, { maxWidth: signatureW })
+    doc.text(certificateOrg, rightSignatureX, signatureY + 33, { maxWidth: signatureW })
+
+    const sealX = contentX + contentW - 72
+    const sealY = topY + 92
+    doc.setFillColor(...gold)
+    doc.circle(sealX, sealY, 28, 'F')
+    doc.setTextColor(...navy)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(7)
+    doc.text('APPROVED', sealX, sealY + 4, { align: 'center' })
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(...muted)
+    doc.text('This certificate is system-generated. Verify at ' + certificateSite, centerX, panelY + panelH - 28, {
+      align: 'center',
+      maxWidth: contentW,
+    })
+
+    doc.save(`${trackingId || 'certificate'}.pdf`)
+    return
+
+    // eslint-disable-next-line no-unreachable
+    {
     // Background border
     doc.setFillColor(...navy)
     doc.rect(0, 0, w, h, 'F')
@@ -272,6 +393,7 @@ export async function downloadMockCertificate(record) {
     doc.setFontSize(9)
     doc.setTextColor(120, 120, 120)
     doc.text('This certificate is system-generated. Verify at ' + site, innerX + 40, h - margin - 20)
+    }
 
     const fileName = `${record.trackingId || 'certificate'}.pdf`
     doc.save(fileName)

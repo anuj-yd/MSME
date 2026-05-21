@@ -14,13 +14,25 @@ use Illuminate\Http\Request;
 
 class AdminRenewalController extends Controller
 {
+    private const ADMIN_VISIBLE_STATUSES = [
+        'submitted',
+        'payment_verified',
+        'in_review',
+        'approved',
+        'filed',
+        'completed',
+        'rejected',
+    ];
+
     public function index(Request $request)
     {
         $status = (string) $request->query('status', 'submitted');
 
-        $q = RenewalApplication::query();
-        if ($status !== 'all') {
+        $q = RenewalApplication::query()->whereIn('status', self::ADMIN_VISIBLE_STATUSES);
+        if ($status !== 'all' && in_array($status, self::ADMIN_VISIBLE_STATUSES, true)) {
             $q->where('status', $status);
+        } elseif ($status !== 'all') {
+            $q->where('_id', '__invalid_admin_status__');
         }
 
         $apps = $q->orderByDesc('created_at')->limit(100)->get()->values();
@@ -56,6 +68,9 @@ class AdminRenewalController extends Controller
     {
         $app = RenewalApplication::query()->where('_id', $id)->first();
         if (! $app) return response()->json(['message' => 'Not found.'], 404);
+        if (! in_array((string) ($app->status ?? ''), self::ADMIN_VISIBLE_STATUSES, true)) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
 
         $user = User::query()->where('_id', (string) $app->user_id)->first();
         $type = RenewalType::query()->where('code', (string) $app->renewal_type_code)->first();
@@ -77,7 +92,7 @@ class AdminRenewalController extends Controller
     public function setStatus(Request $request, string $id)
     {
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:submitted,payment_verified,in_review,approved,otp_required,filed,completed,rejected'],
+            'status' => ['required', 'string', 'in:submitted,payment_verified,in_review,approved,filed,completed,rejected'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
