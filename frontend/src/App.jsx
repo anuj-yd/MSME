@@ -82,6 +82,7 @@ function App() {
 
   let page = <LandingPage />
   if (pathname === '/login') page = <LoginPage />
+  else if (pathname === '/admin-login') page = <LoginPage adminMode />
   else if (pathname === '/register') page = <RegisterPage />
   else if (pathname === '/verify') page = <VerifyOtpPage email={params.get('email') || ''} />
   else if (pathname === '/dashboard') page = <UserDashboardPage />

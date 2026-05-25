@@ -36,6 +36,12 @@ export function SiteHeader() {
             Log in
           </a>
           <a
+            href="#/admin-login"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            Admin
+          </a>
+          <a
             href="#/register"
             className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary-500/25 transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
           >
@@ -484,6 +490,7 @@ export function SiteFooter() {
               <li><a href="#how" className="hover:text-primary-600 transition-colors">How it works</a></li>
               <li><a href="#benefits" className="hover:text-primary-600 transition-colors">Benefits</a></li>
               <li><a href="#faq" className="hover:text-primary-600 transition-colors">FAQ</a></li>
+              <li><a href="#/admin-login" className="hover:text-primary-600 transition-colors">Admin login</a></li>
             </ul>
           </div>
 

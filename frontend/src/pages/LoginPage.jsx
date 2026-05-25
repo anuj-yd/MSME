@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useAppActions } from '../state/appStore.jsx'
 
-function LoginPage() {
-  const { login } = useAppActions()
+function LoginPage({ adminMode = false }) {
+  const { login, logout } = useAppActions()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,7 +23,13 @@ function LoginPage() {
         window.location.hash = `#/verify?email=${encodeURIComponent(res.email || email)}`
         return
       }
-      window.location.hash = '#/dashboard'
+      const isAdmin = res?.user?.role === 'admin'
+      if (adminMode && !isAdmin) {
+        await logout()
+        setError('This account does not have admin access.')
+        return
+      }
+      window.location.hash = isAdmin ? '#/admin/dashboard' : '#/dashboard'
     } catch (err) {
       const message =
         err?.response?.data?.message ||
@@ -55,8 +61,12 @@ function LoginPage() {
 
         <div className="rounded-[2rem] border border-white/60 bg-white/70 p-8 shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:p-10">
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-            <p className="mt-2 text-sm text-slate-500">Sign in to your MSE account to continue.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              {adminMode ? 'Admin login' : 'Welcome back'}
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              {adminMode ? 'Sign in with an admin account to continue.' : 'Sign in to your MSE account to continue.'}
+            </p>
           </div>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -115,12 +125,29 @@ function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-500">
-            Don't have an account?{' '}
-            <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/register">
-              Create an account
-            </a>
-          </p>
+          {adminMode ? (
+            <p className="mt-8 text-center text-sm text-slate-500">
+              User account?{' '}
+              <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/login">
+                Use regular login
+              </a>
+            </p>
+          ) : (
+            <div className="mt-8 space-y-3 text-center text-sm text-slate-500">
+              <p>
+                Don't have an account?{' '}
+                <a className="font-semibold text-primary-600 transition-colors hover:text-primary-700 hover:underline" href="#/register">
+                  Create an account
+                </a>
+              </p>
+              <p>
+                Admin user?{' '}
+                <a className="font-semibold text-slate-700 transition-colors hover:text-primary-700 hover:underline" href="#/admin-login">
+                  Open admin login
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="mt-8 text-center">

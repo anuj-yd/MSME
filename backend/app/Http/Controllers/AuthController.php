@@ -174,6 +174,7 @@ class AuthController extends Controller
                 'id' => (string) $user->getKey(),
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role ?? 'user',
                 'email_verified_at' => $user->email_verified_at,
             ],
         ]);
@@ -188,6 +189,7 @@ class AuthController extends Controller
                 'id' => (string) $user->getKey(),
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role ?? 'user',
                 'email_verified_at' => $user->email_verified_at,
             ],
         ]);

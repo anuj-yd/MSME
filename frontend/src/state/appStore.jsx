@@ -157,7 +157,7 @@ export function AppStoreProvider({ children }) {
       if (res?.data?.requires_otp) return { requiresOtp: true, email: res.data.email || email }
       dispatch({ type: 'auth/setToken', token: res.data.token })
       dispatch({ type: 'auth/setUser', user: res.data.user })
-      return { ok: true }
+      return { ok: true, user: res.data.user }
     }
 
     async function logout() {
