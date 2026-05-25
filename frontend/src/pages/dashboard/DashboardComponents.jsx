@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from 'react'
-import { useAppActions, useAppState } from '../../state/appStore.jsx'
 import { LanguageSelect } from '../../components/GoogleTranslate.jsx'
 
 export function PageShell({ title, subtitle, right, children }) {
@@ -37,19 +36,9 @@ export function PageShell({ title, subtitle, right, children }) {
 }
 
 function PreferenceControls() {
-  const { theme } = useAppState()
-  const { toggleTheme } = useAppActions()
-
   return (
     <div className="flex items-center gap-2">
       <LanguageSelect compact />
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50"
-      >
-        {theme === 'dark' ? 'Light' : 'Dark'}
-      </button>
     </div>
   )
 }

@@ -7,15 +7,9 @@ const AppActionsContext = createContext(null)
 
 const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((language) => language.code)
 
-function getStoredPreference(key, fallback, allowed) {
-  const value = localStorage.getItem(key)
-  return allowed.includes(value) ? value : fallback
-}
-
 const initialState = {
   authToken: localStorage.getItem('auth_token') || '',
   language: 'en',
-  theme: getStoredPreference('app_theme', 'light', ['light', 'dark']),
   user: null,
   entitlement: null,
   documentVault: {
@@ -66,8 +60,6 @@ function reducer(state, action) {
         ...state,
         language: SUPPORTED_LANGUAGE_CODES.includes(action.language) ? action.language : 'en',
       }
-    case 'preferences/setTheme':
-      return { ...state, theme: action.theme === 'dark' ? 'dark' : 'light' }
     default:
       return state
   }
@@ -87,22 +79,14 @@ export function AppStoreProvider({ children }) {
   }, [state.language])
 
   useEffect(() => {
-    localStorage.setItem('app_theme', state.theme)
-    document.documentElement.classList.toggle('dark', state.theme === 'dark')
-    document.documentElement.dataset.theme = state.theme
-  }, [state.theme])
+    localStorage.setItem('app_theme', 'dark')
+    document.documentElement.classList.add('dark')
+    document.documentElement.dataset.theme = 'dark'
+  }, [])
 
   const actions = useMemo(() => {
     function setLanguage(language) {
       dispatch({ type: 'preferences/setLanguage', language })
-    }
-
-    function setTheme(theme) {
-      dispatch({ type: 'preferences/setTheme', theme })
-    }
-
-    function toggleTheme() {
-      dispatch({ type: 'preferences/setTheme', theme: state.theme === 'dark' ? 'light' : 'dark' })
     }
 
     async function bootstrap() {
@@ -333,8 +317,6 @@ export function AppStoreProvider({ children }) {
 
     return {
       setLanguage,
-      setTheme,
-      toggleTheme,
       bootstrap,
       login,
       logout,
@@ -364,7 +346,7 @@ export function AppStoreProvider({ children }) {
       createRazorpayOrder,
       verifyRazorpayPayment,
     }
-  }, [state.authToken, state.theme])
+  }, [state.authToken])
 
   return (
     <AppStateContext.Provider value={state}>

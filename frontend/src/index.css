@@ -17,7 +17,7 @@
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
     scroll-behavior: smooth;
   }
 
@@ -26,7 +26,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-slate-950 text-slate-100 antialiased font-sans;
   }
 
   body > .skiptranslate,
@@ -51,14 +51,49 @@
     background-color: rgba(15, 23, 42, 0.88);
   }
 
+  html.dark [class*="bg-[#f7f9fc]"],
+  html.dark [class*="bg-[#F4F8FF]"] {
+    background-color: #020617;
+  }
+
   html.dark [class*="bg-white/"],
   html.dark [class*="bg-slate-50/"],
   html.dark [class*="bg-slate-100/"] {
     background-color: rgba(15, 23, 42, 0.72);
   }
 
-  html.dark [class*="bg-primary-50"] {
+  html.dark [class*="from-white"],
+  html.dark [class*="via-white"],
+  html.dark [class*="to-white"],
+  html.dark [class*="from-slate-50"],
+  html.dark [class*="via-slate-50"],
+  html.dark [class*="to-slate-50"] {
+    background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.86));
+  }
+
+  html.dark [class*="bg-primary-50"],
+  html.dark [class*="bg-primary-100"] {
     background-color: rgba(30, 64, 175, 0.22);
+  }
+
+  html.dark [class*="bg-indigo-50"],
+  html.dark [class*="bg-indigo-100"] {
+    background-color: rgba(67, 56, 202, 0.24);
+  }
+
+  html.dark [class*="bg-emerald-50"],
+  html.dark [class*="bg-emerald-100"] {
+    background-color: rgba(6, 95, 70, 0.22);
+  }
+
+  html.dark [class*="bg-amber-50"],
+  html.dark [class*="bg-amber-100"] {
+    background-color: rgba(146, 64, 14, 0.22);
+  }
+
+  html.dark [class*="bg-rose-50"],
+  html.dark [class*="bg-rose-100"] {
+    background-color: rgba(159, 18, 57, 0.22);
   }
 
   html.dark [class*="border-slate-200"],
@@ -77,6 +112,26 @@
   html.dark [class*="text-slate-600"],
   html.dark [class*="text-slate-500"] {
     color: #cbd5e1;
+  }
+
+  html.dark [class*="text-primary-"] {
+    color: #93c5fd;
+  }
+
+  html.dark [class*="text-indigo-"] {
+    color: #c4b5fd;
+  }
+
+  html.dark [class*="text-emerald-"] {
+    color: #86efac;
+  }
+
+  html.dark [class*="text-amber-"] {
+    color: #fcd34d;
+  }
+
+  html.dark [class*="text-rose-"] {
+    color: #fda4af;
   }
 
   html.dark input,
